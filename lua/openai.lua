@@ -53,7 +53,7 @@ function M.openai_request(endpoint, data)
     on_stdout = M._create_append_to_buffer_func(ai_buf),
   })
   --[[
-  local response = curl.post ("https://api.openai.com/v1/" .. endpoint, {
+  local response = curl.post (openai_url .. endpoint, {
     body = vim.fn.json_encode(data),
     headers = headers,
     on_stdout = M.print_things,
@@ -108,9 +108,6 @@ function M._create_append_to_buffer_func(target_buffer)
       local resp = d.choices[1].text
       local end_of_buf = utils.buf_get_end_pos(target_buffer)
       local insert_row = end_of_buf[1]-1
-      --TODO Determine why row needs -1, but col doesn't
-      --Maybe related to neovim.io/doc/user/api.html api-indexing exceptions
-      --local insert_col = end_of_buf[2]-1
       local insert_col = end_of_buf[2]
 
       local resp_array = utils.string_split(resp, "\n")
