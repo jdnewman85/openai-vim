@@ -1,4 +1,11 @@
-local models = require('openai_models')
+local menus = require('openai_menus')
 
-models.print_all_model_prices()
+--models.print_all_model_prices()
 
+
+
+
+
+
+
+menus.show_menu()

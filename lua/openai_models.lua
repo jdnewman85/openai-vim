@@ -16,8 +16,29 @@ models['edit'] = {
   { name = 'code-davinci-edit-001', max_tokens = nil, },
 }
 
-function M.get_all()
+function M.get_model_map()
   return models
+end
+
+function M.get_all_models()
+  local model_names = {}
+  --TODO null checks for iterators
+  for _, endpoint_models in pairs(models) do
+    for _, model in ipairs(endpoint_models) do
+      table.insert(model_names, model.name)
+    end
+  end
+  return model_names
+end
+
+function M.get_models_by_endpoint(endpoint)
+  --TODO null checks for iterators
+  local model_names = {}
+  local endpoint = models[endpoint]
+  for _, model in ipairs(endpoint) do
+    table.insert(model_names, model.name)
+  end
+  return model_names
 end
 
 function M.guess_price_per_1kt(model)
