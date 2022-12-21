@@ -89,7 +89,7 @@ function M.openai_completion()
 end
 
 function M._create_append_to_buffer_func(target_buffer)
-  local f =  function(err, data, job)
+  local fn =  function(err, data, job)
     -- Trim off `Data :`
     local maybe_json = string.sub(data, 7, -1)
     if maybe_json == '[DONE]' then
@@ -115,7 +115,7 @@ function M._create_append_to_buffer_func(target_buffer)
     end)
   end
 
-  return f
+  return fn
 end
 
 

@@ -1,5 +1,8 @@
 local models = require('openai_models')
 
+-- TODO Handle cancels gracefully
+-- TODO Add setting of actual values
+
 local M = {}
 
 local function echo_choice(selection)
