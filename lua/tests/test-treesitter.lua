@@ -1,3 +1,7 @@
+
+-- Treesitter test - Select function around cursor
+
+
 local ts = vim.treesitter
 local ts_utils = require 'nvim-treesitter.ts_utils'
 
