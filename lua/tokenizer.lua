@@ -15,7 +15,6 @@ local server_job = nil
 
 local output_window = nil
 local output_buffer = nil
-local highlight_group = nil
 local highlight_namespace = nil
 
 function open_window()
@@ -118,10 +117,31 @@ function M.tokenize(text)
 
   local win, buf = open_window_if_needed()
   local split_text = utils.string_split(text, "\n")
+  vim.pretty_print(split_text)
   vim.api.nvim_buf_set_lines(buf, -1, -1, true, split_text)
 
+  --TODO Highlight space characters with background or similar?
+  local highlight_colors = {
+    "rainbowcol1",
+    "rainbowcol2",
+    "rainbowcol3",
+    "rainbowcol4",
+    "rainbowcol5",
+    "rainbowcol6",
+    "rainbowcol7",
+  }
+
   highlight_namespace = vim.api.nvim_create_namespace("TODO")
-  highlight_group = highlight_group or vim.api.nvim_buf_add_highlight(buf, highlight_namespace, "String", 0, 0, -1)
+  local current_col = 0
+  for i, v in ipairs(response_decoded) do
+    local current_highlight_num = (i % #highlight_colors) + 1
+    local current_highlight = highlight_colors[current_highlight_num]
+    local symbol_len = string.len(v["symbol"])
+    local line_num = vim.api.nvim_buf_line_count(buf)
+    print("Line num: " .. line_num)
+    vim.api.nvim_buf_add_highlight(buf, highlight_namespace, current_highlight, 1, current_col, current_col+symbol_len)--TODO LINE NUMBER
+    current_col = current_col + symbol_len
+  end
 
   return response_decoded
 end
