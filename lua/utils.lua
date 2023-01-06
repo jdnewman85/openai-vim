@@ -55,6 +55,10 @@ function M.trim_ws(s)
    return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
+function M.is_empty_string(s)
+  return not s or (s == "")
+end
+
 function M.print_things(err, data, job)
   print(data)
 end
