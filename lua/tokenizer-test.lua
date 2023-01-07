@@ -1,15 +1,4 @@
-local tokenizer = require"tokenizer"
-local utils = require"utils"
-
-
---local input = utils.get_selected_text(0)
-local input = utils.buf_vtext()
-if not input then return end
-
-local response = tokenizer.tokenize(input)
---vim.pretty_print(response)
-print("Tokens response: ".. #response)
-
-
+-- TODO TEMP? Bind key
+vim.api.nvim_set_keymap("v", "<leader>t", "<cmd>lua require('tokenizer').tokenize_selected_text()<cr>", {})
 
 --This is a test! A Much longer test with more text. !!!!!!!! This is coolsio! y'all like's it? Hello World!

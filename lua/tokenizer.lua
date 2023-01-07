@@ -126,4 +126,15 @@ end
 -- TODO Put in auto run folder
 M.connect_or_start()
 
+function M.tokenize_selected_text()
+  local input = utils.buf_vtext()
+  if not input then return end
+
+  local response = M.tokenize(input)
+  --vim.pretty_print(response)
+  --print("Tokens response: ".. #response)
+  return response
+end
+
+
 return M
