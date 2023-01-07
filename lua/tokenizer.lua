@@ -126,6 +126,11 @@ end
 -- TODO Put in auto run folder
 M.connect_or_start()
 
+-- TODO Rename to be popup window version
+-- Or, take parameters for
+-- If not a new window/buffer, highlight text in selection
+  -- which requires knowing the start position (line, and column)
+  -- and using that in the tokenize_selected_text function
 function M.tokenize_selected_text()
   local input = utils.buf_vtext()
   if not input then return end
@@ -134,6 +139,10 @@ function M.tokenize_selected_text()
   --vim.pretty_print(response)
   --print("Tokens response: ".. #response)
   return response
+end
+
+function M.clear_highlights()
+  vim.api.nvim_buf_clear_namespace(output_buffer, highlight_namespace, 0, -1)
 end
 
 
