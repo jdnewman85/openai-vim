@@ -42,6 +42,14 @@ function M.buf_vtext()
   return text
 end
 
+--TODO Finish
+function M.get_selected_text(buffer)
+  local start_line, start_col = unpack(vim.api.nvim_win_get_cursor(buffer))
+  local end_line = start_line + vim.api.nvim_win_get_height(0) - 1 --TODO window param?
+  return "NOT FINISHED"
+--  return vim.api.nvim_buf_get_text(buffer, start_line, end_line, false)
+end
+
 function M.buf_get_end_pos(buf)
   local num_rows = vim.api.nvim_buf_line_count(buf)
   local strict_indexing = true
@@ -70,5 +78,34 @@ function M.string_split(s, delimiter)
   end
   return result
 end
+
+function M.open_floating_window()
+  new_buf = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_buf_set_option(new_buf, 'bufhidden', 'wipe')
+
+  local term_width = vim.api.nvim_get_option('columns')
+  local term_height = vim.api.nvim_get_option('lines')
+
+  local win_width = math.ceil(term_width * 0.7)
+  local win_height = math.ceil(term_height * 0.5 - 4)
+
+  local row = math.ceil((term_height - win_height) / 2 - 1)
+  local col = math.ceil((term_width - win_width) / 2)
+
+  local opts = {
+    style = "minimal",
+    relative = "editor",
+    width = win_width,
+    height = win_height,
+    row = row,
+    col = col
+  }
+
+  local focus_new_window = false
+  local new_win = vim.api.nvim_open_win(new_buf, focus_new_window, opts)
+
+  return new_win, new_buf
+end
+
 
 return M

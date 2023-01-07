@@ -2,6 +2,7 @@ local tokenizer = require"tokenizer"
 local utils = require"utils"
 
 
+--local input = utils.get_selected_text(0)
 local input = utils.buf_vtext()
 if not input then return end
 

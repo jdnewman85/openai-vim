@@ -17,37 +17,20 @@ local output_window = nil
 local output_buffer = nil
 local highlight_namespace = nil
 
-function open_window()
-  new_buf = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_buf_set_option(new_buf, 'bufhidden', 'wipe')
-
-  local term_width = vim.api.nvim_get_option('columns')
-  local term_height = vim.api.nvim_get_option('lines')
-
-  local win_width = math.ceil(term_width * 0.7)
-  local win_height = math.ceil(term_height * 0.5 - 4)
-
-  local row = math.ceil((term_height - win_height) / 2 - 1)
-  local col = math.ceil((term_width - win_width) / 2)
-
-  local opts = {
-    style = "minimal",
-    relative = "editor",
-    width = win_width,
-    height = win_height,
-    row = row,
-    col = col
-  }
-
-  local focus_new_window = false
-  local new_win = vim.api.nvim_open_win(new_buf, focus_new_window, opts)
-
-  return new_win, new_buf
-end
+--TODO Highlight space characters with background or similar?
+local highlight_colors = {
+  "rainbowcol1",
+  "rainbowcol2",
+  "rainbowcol3",
+  "rainbowcol4",
+  "rainbowcol5",
+  "rainbowcol6",
+  "rainbowcol7",
+}
 
 function open_window_if_needed()
   if not output_window or not output_buffer then
-    output_window, output_buffer = open_window()
+    output_window, output_buffer = utils.open_floating_window()
   end
 
   return output_window, output_buffer
@@ -120,17 +103,6 @@ function M.tokenize(text)
   vim.pretty_print(split_text)
   vim.api.nvim_buf_set_lines(buf, -1, -1, true, split_text)
 
-  --TODO Highlight space characters with background or similar?
-  local highlight_colors = {
-    "rainbowcol1",
-    "rainbowcol2",
-    "rainbowcol3",
-    "rainbowcol4",
-    "rainbowcol5",
-    "rainbowcol6",
-    "rainbowcol7",
-  }
-
   highlight_namespace = vim.api.nvim_create_namespace("TODO")
   local current_col = 0
   for i, v in ipairs(response_decoded) do
@@ -138,7 +110,6 @@ function M.tokenize(text)
     local current_highlight = highlight_colors[current_highlight_num]
     local symbol_len = string.len(v["symbol"])
     local line_num = vim.api.nvim_buf_line_count(buf)
-    print("Line num: " .. line_num)
     vim.api.nvim_buf_add_highlight(buf, highlight_namespace, current_highlight, 1, current_col, current_col+symbol_len)--TODO LINE NUMBER
     current_col = current_col + symbol_len
   end
