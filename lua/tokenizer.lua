@@ -109,14 +109,14 @@ function M.tokenize(text)
   for i, v in ipairs(response_decoded) do
     local current_highlight_num = (i % #highlight_colors) + 1
     local current_highlight = highlight_colors[current_highlight_num]
-    local symbol_len = string.len(v["symbol"])
-    print("Line num: " .. current_line_num)
+    local symbol = v["symbol"]
+    local symbol_len = string.len(symbol)
     vim.api.nvim_buf_add_highlight(buf, highlight_namespace, current_highlight, current_line_num, current_col, current_col+symbol_len)--TODO LINE NUMBER
     current_col = current_col + symbol_len
-    if v["symbol"] == "\n" then
-      print("HEEEEEEYYYYYYOOOOO")
+    local _, num_newlines = string.gsub(symbol, "\n", "\n")
+    if num_newlines > 0 then
       current_col = 0
-      current_line_num = current_line_num + 1
+      current_line_num = current_line_num + num_newlines
     end
   end
 
