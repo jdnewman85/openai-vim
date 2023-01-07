@@ -99,19 +99,25 @@ function M.tokenize(text)
   local response_decoded = vim.fn.json_decode(response)
 
   local win, buf = open_window_if_needed()
+  local buf_original_line_length = vim.api.nvim_buf_line_count(buf)-1
   local split_text = utils.string_split(text, "\n")
-  vim.pretty_print(split_text)
-  vim.api.nvim_buf_set_lines(buf, -1, -1, true, split_text)
+  vim.api.nvim_buf_set_lines(buf, buf_original_line_length, buf_original_line_length, true, split_text)
 
   highlight_namespace = vim.api.nvim_create_namespace("TODO")
   local current_col = 0
+  local current_line_num = buf_original_line_length
   for i, v in ipairs(response_decoded) do
     local current_highlight_num = (i % #highlight_colors) + 1
     local current_highlight = highlight_colors[current_highlight_num]
     local symbol_len = string.len(v["symbol"])
-    local line_num = vim.api.nvim_buf_line_count(buf)
-    vim.api.nvim_buf_add_highlight(buf, highlight_namespace, current_highlight, 1, current_col, current_col+symbol_len)--TODO LINE NUMBER
+    print("Line num: " .. current_line_num)
+    vim.api.nvim_buf_add_highlight(buf, highlight_namespace, current_highlight, current_line_num, current_col, current_col+symbol_len)--TODO LINE NUMBER
     current_col = current_col + symbol_len
+    if v["symbol"] == "\n" then
+      print("HEEEEEEYYYYYYOOOOO")
+      current_col = 0
+      current_line_num = current_line_num + 1
+    end
   end
 
   return response_decoded
