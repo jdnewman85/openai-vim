@@ -102,15 +102,16 @@ function M.tokenize(text)
 end
 
 function M.highlight_tokens(tokens, buffer, start_line, start_column)
-  highlight_namespace = vim.api.nvim_create_namespace("TODO")
+  highlight_namespace = vim.api.nvim_create_namespace("TokenizerHighlights")
   local current_col = start_column
   local current_line_num = start_line
+  print("Tokens: " .. #tokens)
   for i, v in ipairs(tokens) do
     local current_highlight_num = (i % #highlight_colors) + 1
     local current_highlight = highlight_colors[current_highlight_num]
     local symbol = v["symbol"]
     local symbol_len = string.len(symbol)
-    vim.api.nvim_buf_add_highlight(buffer, highlight_namespace, current_highlight, current_line_num, current_col, current_col+symbol_len)--TODO LINE NUMBER
+    vim.api.nvim_buf_add_highlight(buffer, highlight_namespace, current_highlight, current_line_num, current_col, current_col+symbol_len)
     current_col = current_col + symbol_len
     local _, num_newlines = string.gsub(symbol, "\n", "\n")
     if num_newlines > 0 then
@@ -120,24 +121,11 @@ function M.highlight_tokens(tokens, buffer, start_line, start_column)
   end
 end
 
-function M.tokenize_and_highlight_in_buffer(buffer, start_line, start_column, end_line, end_column)
-
-end
-
--- TODO Put in auto run folder
-M.connect_or_start()
-
--- TODO Rename to be popup window version
--- Or, take parameters for
--- If not a new window/buffer, highlight text in selection
-  -- which requires knowing the start position (line, and column)
-  -- and using that in the tokenize_selected_text function
 function M.tokenize_selected_text()
   local input = utils.buf_vtext()
   if not input then return end
 
   local buffer = 0 -- TODO
-  --local start_line, start_col = unpack(vim.api.nvim_win_get_cursor(buffer))
   local start_line, start_col = utils.visual_selection_range()
 
   local response = M.tokenize(input)
@@ -151,5 +139,8 @@ function M.clear_highlights(buffer)
   vim.api.nvim_buf_clear_namespace(buffer, highlight_namespace, 0, -1)
 end
 
+
+-- TODO Put in auto run folder
+M.connect_or_start()
 
 return M
