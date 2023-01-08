@@ -38,7 +38,7 @@ end
 
 
 function get_address_if_already_running()
-  print("Checking if server is running...")
+  --print("Checking if server is running...")
   --Use ss
   local result = utils.trim_ws(vim.fn.system("ss -lntp | grep \"bpe_tokenizer\" | awk '{print $4}'"))
   if utils.is_empty_string(result) then
@@ -54,7 +54,7 @@ function M.connect_or_start()
     return M.start_server()
   end
 
-  print("Found server: " .. a)
+  --print("Found server: " .. a)
   address, port = unpack(utils.string_split(a, ':'))
 end
 
@@ -86,7 +86,7 @@ function M.start_server()
 end
 
 function M.tokenize(text)
-  print("Tokenizing: '" .. text .. "'")
+  --print("Tokenizing: '" .. text .. "'")
   local url = "http://" .. address .. ":" .. port .. "/tokenize_new"
   local headers = {
     ["Content-Type"] = "application/json",
@@ -103,7 +103,7 @@ end
 
 function M.highlight_tokens(tokens, buffer, start_line, start_column)
   highlight_namespace = vim.api.nvim_create_namespace("TODO")
-  local current_col = 0
+  local current_col = start_column
   local current_line_num = start_line
   for i, v in ipairs(tokens) do
     local current_highlight_num = (i % #highlight_colors) + 1
