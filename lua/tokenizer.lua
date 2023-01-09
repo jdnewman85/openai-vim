@@ -121,6 +121,27 @@ function M.highlight_tokens(tokens, buffer, start_line, start_column)
   end
 end
 
+function M.highlight_tokens_extmark(tokens, buffer, start_line, start_column)
+  highlight_namespace = vim.api.nvim_create_namespace("TokenizerHighlights")
+  local current_col = start_column
+  local current_line_num = start_line
+  print("Tokens: " .. #tokens)
+  local virt_text = {}
+  for i, v in ipairs(tokens) do
+    local current_highlight_num = (i % #highlight_colors) + 1
+    local current_highlight = highlight_colors[current_highlight_num]
+    local symbol = v["symbol"]
+    table.insert(virt_text, {symbol, current_highlight})
+  end
+    vim.api.nvim_buf_set_extmark(buffer, highlight_namespace, current_line_num, current_col, {
+      virt_text = virt_text,
+--      virt_lines = {virt_text},
+      sign_text = "AI",
+--      virt_lines_leftcol = true,
+      conceal = "",
+    })
+end
+
 function M.tokenize_selected_text()
   local input = utils.buf_vtext()
   if not input then return end
