@@ -27,7 +27,8 @@ local function set_max_tokens()
     {
       prompt = "Max Tokens: ",
       default = "1000",
-      telescope = require("telescope.themes").get_dropdown(),
+      kind = "max_tokens",
+      --telescope = require("telescope.themes").get_ivy(),
     },
     echo_choice
   )
