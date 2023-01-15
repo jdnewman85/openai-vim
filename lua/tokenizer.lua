@@ -153,6 +153,13 @@ function M.tokenize_selected_text()
   M.highlight_tokens(response, buffer, start_line, start_col)
   --vim.pretty_print(response)
   --print("Tokens response: ".. #response)
+
+  --TODO Place at the end line/col of selection?
+  vim.api.nvim_buf_set_extmark(buffer, highlight_namespace, start_line, start_col, {
+    virt_text = {{"Tokens: ".. #response, "Whitespace"}},
+--    virt_lines = {virt_text},
+--    sign_text = "AI",
+  })
   return response
 end
 
