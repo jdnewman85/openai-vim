@@ -1,6 +1,6 @@
 -- TODO TEMP? Bind key
-vim.api.nvim_set_keymap("v", "<leader>t", "<cmd>lua require('tokenizer').tokenize_selected_text()<cr>", {})
-vim.api.nvim_set_keymap("n", "<leader>c", "<cmd>lua require('tokenizer').clear_highlights(0)<cr>", {})
+vim.api.nvim_set_keymap("v", "<leader>ot", "<cmd>lua require('tokenizer').tokenize_selected_text()<cr>", {})
+vim.api.nvim_set_keymap("n", "<leader>oc", "<cmd>lua require('tokenizer').clear_highlights(0)<cr>", {})
 
 --This is a test!
 
