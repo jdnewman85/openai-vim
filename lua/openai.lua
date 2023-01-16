@@ -14,29 +14,16 @@ function M.request(endpoint, data, on_stdout)
     ["Content-Type"] = "application/json",
   }
 
-
   local curl_opts = {
     body = vim.fn.json_encode(data),
     headers = headers,
   }
 
-  local stream_opt = data["stream"]
-  if stream_opt and not on_stdout then
-    local current_buffer = 0
-    local _, _, insert_row, insert_column = utils.visual_selection_range()
-    --TODO Remove magic
-    if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
-      insert_row = insert_row + 1
-      insert_column = 0
-    end
-    on_stdout = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
-  end
-
   if on_stdout then
     curl_opts["on_stdout"] = on_stdout
   end
   local job_or_response = curl.post(url .. endpoint, curl_opts)
-  if stream_opt then
+  if data["stream"] then
     job = job_or_response
     return job
   end
@@ -47,6 +34,7 @@ function M.request(endpoint, data, on_stdout)
   return response_decoded
 end
 
+--[[ TODO
 function M.edits()
   local data = {
     model = "text-davinci-edit-001", --TODO
@@ -57,6 +45,7 @@ function M.edits()
 --  vim.pretty_print(response_decoded)
   return response_decoded
 end
+]]--
 
 function M.complete_selection()
   local txt = utils.buf_vtext()
@@ -67,7 +56,17 @@ function M.complete_selection()
     temperature = 0,
     stream = true,
   }
-  local response_decoded = M.request("completions", data)
+
+  local current_buffer = 0
+  local _, _, insert_row, insert_column = utils.visual_selection_range()
+  --TODO Remove magic
+  if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
+    insert_row = insert_row + 1
+    insert_column = 0
+  end
+  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
+
+  local response_decoded = M.request("completions", data, append_to_buffer_func)
 --  vim.pretty_print(response_decoded)
   return response_decoded
 end
