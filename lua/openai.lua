@@ -1,12 +1,9 @@
 local utils = require('utils')
 local models = require('openai_models')
+local config = require('openai_config')
 
 local M = {}
 
---[[
---TODO
-If stream == true, and no callback, use function append to target location?
-]]--
 function M.request(endpoint, data, on_stdout)
   local url = "https://api.openai.com/v1/"
   local curl = require "plenary.curl"
@@ -27,11 +24,12 @@ function M.request(endpoint, data, on_stdout)
   if stream_opt and not on_stdout then
     local current_buffer = 0
     local _, _, insert_row, insert_column = utils.visual_selection_range()
-    if insert_column == 2147483647 then
+    --TODO Remove magic
+    if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
       insert_row = insert_row + 1
       insert_column = 0
     end
-    on_stdout = M._create_append_to_buffer_func(current_buffer, insert_row+1, insert_column)
+    on_stdout = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
   end
 
   if on_stdout then
@@ -51,7 +49,7 @@ end
 
 function M.edits()
   local data = {
-    model = "text-davinci-edit-001",
+    model = "text-davinci-edit-001", --TODO
     input = utils.buf_vtext(),
     instruction = "Fix the spelling mistakes"
   }
@@ -63,9 +61,9 @@ end
 function M.complete_selection()
   local txt = utils.buf_vtext()
   local data = {
-    model = "code-davinci-002",
+    model = config.get_model(),
     prompt = txt,
-    max_tokens = 40,
+    max_tokens = config.get_max_tokens(),
     temperature = 0,
     stream = true,
   }
@@ -75,7 +73,7 @@ function M.complete_selection()
 end
 
 function M._create_append_to_buffer_func(target_buffer, start_insert_row, start_insert_column)
-  local insert_row = start_insert_row-1
+  local insert_row = start_insert_row
   local insert_column = start_insert_column
 
   local fn =  function(err, data, job)
@@ -95,9 +93,17 @@ function M._create_append_to_buffer_func(target_buffer, start_insert_row, start_
     vim.schedule(function()
       local d = vim.fn.json_decode(maybe_json)
       local resp = d.choices[1].text
-
       local resp_array = utils.string_split(resp, "\n")
-      vim.api.nvim_buf_set_text(target_buffer, insert_row, insert_column, insert_row, insert_column, resp_array)
+
+      -- Use nvim_buf_set_lines if we need to append lines,
+      --  to avoid insert_row being out of bounds for nvim_buf_set_text
+      --  Use nvim_buf_set_text, otherwise, so we can insert _on_ a line
+      local buffer_row_length = vim.api.nvim_buf_line_count(target_buffer)
+      if insert_row >= buffer_row_length then
+        vim.api.nvim_buf_set_lines(target_buffer, insert_row, insert_row, true, resp_array)
+      else
+        vim.api.nvim_buf_set_text(target_buffer, insert_row, insert_column, insert_row, insert_column, resp_array)
+      end
 
       local num_inserted_rows = #resp_array-1
       local response_last_line_length = string.len(resp_array[#resp_array])

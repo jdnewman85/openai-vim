@@ -1,13 +1,10 @@
 local models = require('openai_models')
+local config = require('openai_config')
 
 -- TODO Handle cancels gracefully
 -- TODO Add setting of actual values
 
 local M = {}
-
-local function echo_choice(selection)
-  print("Your choice: " .. selection)
-end
 
 local function choose_model_menu()
   local model_names = models.get_models_by_endpoint('codex')
@@ -17,20 +14,25 @@ local function choose_model_menu()
       prompt = "Model Choice",
       telescope = require("telescope.themes").get_dropdown(),
     },
-    echo_choice
+    function(selection)
+      config.set_model(selection)
+      print("Setting model to: "..selection)
+    end
   )
 end
 
 local function set_max_tokens()
-  --TODO Figure out why my input is trash? Highlight stuffs
   vim.ui.input(
     {
       prompt = "Max Tokens: ",
-      default = "1000",
+      default = tostring(config.get_max_tokens()),
       kind = "max_tokens",
       --telescope = require("telescope.themes").get_ivy(),
     },
-    echo_choice
+    function(max_tokens)
+      config.set_max_tokens(tonumber(max_tokens))
+      print("Setting max_tokens to: "..max_tokens)
+    end
   )
 end
 
