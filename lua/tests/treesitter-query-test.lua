@@ -3,7 +3,6 @@
 
 
 local ts_utils = require("nvim-treesitter.ts_utils")
-local menus = require('openai_menus')
 
 --[[
 local function get_top_node_under_cursor()
@@ -23,8 +22,11 @@ ts_utils.update_selection(bufnr, node)
 ]]--
 
 
---menus.show_menu()
 
+
+
+
+-- Find all functions via query
 local ts = vim.treesitter
 local ts_utils = require 'nvim-treesitter.ts_utils'
 
