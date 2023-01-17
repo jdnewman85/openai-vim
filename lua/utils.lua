@@ -114,4 +114,11 @@ function M.visual_selection_range()
   end
 end
 
+function M.combine_tables(t1, t2)
+  for _, v in ipairs(t2) do
+    table.insert(t1, v)
+  end
+  return t1
+end
+
 return M

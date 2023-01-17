@@ -1,22 +1,39 @@
-local models = require('openai_models')
-local config = require('openai_config')
+local openai_models = require('openai_models')
+local openai_config = require('openai_config')
 
 -- TODO Handle cancels gracefully
 -- TODO Add setting of actual values
 
 local M = {}
 
-local function choose_model_menu()
-  local model_names = models.get_models_by_endpoint('codex')
+local function choose_model_menu(endpoint)
+  local models = openai_models.get_models_by_endpoint(endpoint)
+  local model_names = openai_models.models_to_names(models)
   vim.ui.select(
     model_names,
     {
       prompt = "Model Choice",
       telescope = require("telescope.themes").get_dropdown(),
     },
-    function(selection)
-      config.set_model(selection)
-      print("Setting model to: "..selection)
+    function(model)
+      openai_config.set_model(endpoint, model)
+      print("Setting model for endpoint '"..endpoint.."' to: "..model)
+    end
+  )
+end
+
+local function choose_model_endpoint_menu()
+  local endpoints = openai_models.get_endpoints()
+
+  vim.ui.select(
+    endpoints,
+    {
+      prompt = "Endpoint Choice",
+      telescope = require("telescope.themes").get_dropdown(),
+    },
+    function(endpoint)
+      print("Selected endpoint: "..endpoint)
+      choose_model_menu(endpoint)
     end
   )
 end
@@ -25,12 +42,12 @@ local function set_max_tokens()
   vim.ui.input(
     {
       prompt = "Max Tokens: ",
-      default = tostring(config.get_max_tokens()),
+      default = tostring(openai_config.get_max_tokens()),
       kind = "max_tokens",
       --telescope = require("telescope.themes").get_ivy(),
     },
     function(max_tokens)
-      config.set_max_tokens(tonumber(max_tokens))
+      openai_config.set_max_tokens(tonumber(max_tokens))
       print("Setting max_tokens to: "..max_tokens)
     end
   )
@@ -38,7 +55,7 @@ end
 
 function M.show_menu()
   local menu_funcs = {}
-  menu_funcs['Choose Model'] = choose_model_menu
+  menu_funcs['Choose Model'] = choose_model_endpoint_menu
   menu_funcs['Set Max Tokens'] = set_max_tokens
 
   local menu_choices = {}

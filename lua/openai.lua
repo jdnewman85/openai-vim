@@ -1,6 +1,5 @@
 local utils = require('utils')
-local models = require('openai_models')
-local config = require('openai_config')
+local openai_config = require('openai_config')
 
 local M = {}
 
@@ -50,9 +49,10 @@ end
 function M.complete_selection()
   local txt = utils.buf_vtext()
   local data = {
-    model = config.get_model(),
+--    model = openai_config.get_model('completions'), --TODO TEMP!!!! While coming up with defaults
+    model = openai_config.get_temp_model('completions', true).name,
     prompt = txt,
-    max_tokens = config.get_max_tokens(),
+    max_tokens = openai_config.get_max_tokens(),
     temperature = 0,
     stream = true,
   }
