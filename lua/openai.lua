@@ -46,6 +46,46 @@ function M.edits()
 end
 ]]--
 
+function M.buffer_context_insert_at_cursor() --TODO Rename
+  local current_window = 0
+  local current_buffer = 0
+  local cursor_row, cursor_column = unpack(vim.api.nvim_win_get_cursor(current_window))
+  local buffer_num_lines = vim.api.nvim_buf_line_count(current_buffer)
+  local last_line = vim.api.nvim_buf_get_lines(current_buffer, -2, -1, true)[1]
+  local last_line_length = string.len(last_line)
+
+  -- Hack?
+  cursor_row = cursor_row - 1
+
+  -- Get prefix/prompt - everything before cursor
+  local prompt = vim.api.nvim_buf_get_text(current_buffer, 0, 0, cursor_row, cursor_column, {})
+  prompt = utils.string_join(prompt, "\n")
+  local suffix = vim.api.nvim_buf_get_text(current_buffer, cursor_row, cursor_column, buffer_num_lines-1, last_line_length, {})
+  suffix = utils.string_join(suffix, "\n")
+  local data = {
+    model = openai_config.get_current_model('completions').name,
+    prompt = prompt,
+    suffix = suffix,
+    max_tokens = openai_config.get_max_tokens(),
+    temperature = 0,
+    stream = true,
+  }
+
+  local insert_row, insert_column = cursor_row, cursor_column
+  --TODO Remove magic
+  if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
+    insert_row = insert_row + 1
+    insert_column = 0
+  end
+  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
+
+  print("-------------------------------")
+  vim.pretty_print(data)
+  local response_decoded = M.request("completions", data, append_to_buffer_func)
+--  vim.pretty_print(response_decoded)
+  return response_decoded
+end
+
 function M.complete_selection()
   local txt = utils.buf_vtext()
   local data = {
@@ -116,7 +156,5 @@ function M._create_append_to_buffer_func(target_buffer, start_insert_row, start_
 
   return fn
 end
-
-
 
 return M

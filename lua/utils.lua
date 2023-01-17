@@ -71,6 +71,18 @@ function M.string_split(s, delimiter)
   return result
 end
 
+function M.string_join(s, delimiter)
+  r = ""
+  for _, str in ipairs(s) do
+    r = r..str..delimiter
+  end
+  --Trim last delimiter
+  local delimiter_length = string.len(delimiter)
+  local r_length = string.len(r)
+  r = string.sub(r, 1, r_length-delimiter_length)
+  return r
+end
+
 function M.open_floating_window()
   new_buf = vim.api.nvim_create_buf(true, true)
   vim.api.nvim_buf_set_option(new_buf, 'bufhidden', 'wipe')
