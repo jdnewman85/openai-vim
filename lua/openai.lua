@@ -71,13 +71,7 @@ function M.buffer_context_insert_at_cursor() --TODO Rename
     stream = true,
   }
 
-  local insert_row, insert_column = cursor_row, cursor_column
-  --TODO Remove magic
-  if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
-    insert_row = insert_row + 1
-    insert_column = 0
-  end
-  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
+  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, cursor_row, cursor_column)
 
   print("-------------------------------")
   vim.pretty_print(data)
@@ -98,11 +92,6 @@ function M.complete_selection()
 
   local current_buffer = 0
   local _, _, insert_row, insert_column = utils.visual_selection_range()
-  --TODO Remove magic
-  if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
-    insert_row = insert_row + 1
-    insert_column = 0
-  end
   local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
 
   local response_decoded = M.request("completions", data, append_to_buffer_func)
@@ -113,6 +102,11 @@ end
 function M._create_append_to_buffer_func(target_buffer, start_insert_row, start_insert_column)
   local insert_row = start_insert_row
   local insert_column = start_insert_column
+
+  if insert_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
+    insert_row = insert_row + 1
+    insert_column = 0
+  end
 
   local fn =  function(err, data, job)
     -- Trim off `Data :`
