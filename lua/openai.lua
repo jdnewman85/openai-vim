@@ -22,7 +22,8 @@ function M.request(endpoint, data, on_stdout)
     curl_opts["on_stdout"] = on_stdout
   end
   local job_or_response = curl.post(url .. endpoint, curl_opts)
-  if data["stream"] then
+  --if data["stream"] then
+  if on_stdout then
     job = job_or_response
     return job
   end
@@ -33,18 +34,63 @@ function M.request(endpoint, data, on_stdout)
   return response_decoded
 end
 
---[[ TODO
-function M.edits()
-  local data = {
-    model = "text-davinci-edit-001", --TODO
-    input = utils.buf_vtext(),
-    instruction = "Fix the spelling mistakes"
-  }
-  local response_decoded = M.request("edits", data)
---  vim.pretty_print(response_decoded)
-  return response_decoded
+local function request_edit_instruction(then_fn)
+  vim.ui.input(
+    {
+      prompt = "Instruction:",
+      default = "",
+      kind = "max_tokens", --TODO Define a kind for this? OR change max_tokens to `centered`?
+      --telescope = require("telescope.themes").get_ivy(),
+    },
+    then_fn
+  )
 end
+--[[ TODO
+-- Prompt for instruction
+-- Use whole buffer for now
+-- Let's try this one without the stream
+--  instead, on_stdout completion, replace the original text with the result
+--    might be good to warn if not enough tokens to actually complete this?
 ]]--
+function M.buffer_edit()
+  request_edit_instruction(function(instruction)
+    local current_buffer = 0
+    local input = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, true)
+    input = utils.string_join(input, "\n")
+    local data = {
+      model = openai_config.get_current_model('edits').name,
+      input = input,
+      instruction = instruction,
+    }
+    local job = M.request("edits", data, function(err, data, job)
+      vim.schedule(function()
+        print("TODO: Finish here")
+        print("Take data and replace buffer with it")
+        print("-------------------in on_stdout")
+        local response = vim.fn.json_decode(data) -- HEEEEEEEEEEEEEEERRRREEE - Can't be called in cb
+        print("response:")
+        vim.pretty_print(response)
+        response = response.choices[1].text
+        print("response2:")
+        vim.pretty_print(response)
+        response = utils.string_split(response, "\n")
+        print("response3:")
+        vim.pretty_print(response)
+        vim.api.nvim_buf_set_lines(current_buffer, -1, -1, true, response) --TODO For now try to append
+        --[[
+        print"err:"
+        vim.pretty_print(err)
+        print"data:"
+        vim.pretty_print(data)
+        print"job"
+        vim.pretty_print(job)
+        ]]--
+      end)
+    end)
+    vim.pretty_print(response_decoded)
+    return job
+  end)
+end
 
 function M.buffer_context_complete_line()
   local stops = {
