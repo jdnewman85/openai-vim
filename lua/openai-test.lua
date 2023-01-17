@@ -4,19 +4,15 @@ vim.api.nvim_set_keymap("v", "<leader>ot", "<cmd>lua require('tokenizer').tokeni
 vim.api.nvim_set_keymap("n", "<leader>oc", "<cmd>lua require('tokenizer').clear_highlights(0)<cr>", {})
 --completion
 vim.api.nvim_set_keymap("v", "<leader>oo", "<cmd>lua require('openai').complete_selection()<cr>", {})
---config
+--menu
 vim.api.nvim_set_keymap("n", "<leader>om", "<cmd>lua require('openai_menus').show_menu()<cr>", {})
+--config
+vim.api.nvim_set_keymap("n", "<leader>op", "<cmd>lua require('openai_config').print_current_settings()<cr>", {})
 
 --[[
---complete later:
--- vim.api.nvim_set_keymap("v", "<leader>oo", "<cmd>lua require('openai').complete()<CR>", {noremap = true, silent = true})
-
-
 --TODO Complete lua function
 function isPrime(n) {
 
 <html>
 <head>
-
 ]]--
-vim.pretty_print(require('openai_config').get_model('completions'))

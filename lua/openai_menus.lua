@@ -17,7 +17,7 @@ local function choose_model_menu(endpoint)
     },
     function(model_name)
       local chosen_model = openai_models.find_model_by_name(models, model_name)
-      openai_config.set_model(endpoint, chosen_model)
+      openai_config.set_current_model(endpoint, chosen_model)
       print("Setting model for endpoint '"..endpoint.."' to: "..model_name)
     end
   )
