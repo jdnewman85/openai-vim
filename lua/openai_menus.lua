@@ -15,9 +15,10 @@ local function choose_model_menu(endpoint)
       prompt = "Model Choice",
       telescope = require("telescope.themes").get_dropdown(),
     },
-    function(model)
-      openai_config.set_model(endpoint, model)
-      print("Setting model for endpoint '"..endpoint.."' to: "..model)
+    function(model_name)
+      local chosen_model = openai_models.find_model_by_name(models, model_name)
+      openai_config.set_model(endpoint, chosen_model)
+      print("Setting model for endpoint '"..endpoint.."' to: "..model_name)
     end
   )
 end

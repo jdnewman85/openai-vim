@@ -19,3 +19,4 @@ function isPrime(n) {
 <head>
 
 ]]--
+vim.pretty_print(require('openai_config').get_model('completions'))

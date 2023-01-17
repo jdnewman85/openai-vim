@@ -12,6 +12,18 @@ local all_models = {
   { name = 'text-davinci-edit-001', endpoint = 'edits',       max_tokens = nil,  },
   { name = 'code-davinci-edit-001', endpoint = 'edits',       max_tokens = nil,  },
 }
+function M.get_endpoint_defaults(codex)
+  --TODO User defined defaults
+  local models = M.get_all_models()
+  if codex then
+    models = M.filter_models_by_is_codex(models)
+  end
+  local r = {}
+  r['completions'] = M.filter_models_by_endpoint(models, 'completions')[1]
+  r['edits'] = M.filter_models_by_endpoint(models, 'edits')[1]
+
+  return r
+end
 
 --TODO Replace many model functions with methods
 --TODO Replace with more generic filter, etc functions
@@ -23,6 +35,15 @@ function M.filter_models_by_endpoint(models, endpoint)
     end
   end
   return r
+end
+
+function M.find_model_by_name(models, name)
+  for _, model in ipairs(models) do
+    if model.name == name then
+     return model
+    end
+  end
+  return nil
 end
 
 function M.filter_models_by_is_edit(models)

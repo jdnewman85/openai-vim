@@ -49,8 +49,7 @@ end
 function M.complete_selection()
   local txt = utils.buf_vtext()
   local data = {
---    model = openai_config.get_model('completions'), --TODO TEMP!!!! While coming up with defaults
-    model = openai_config.get_temp_model('completions', true).name,
+    model = openai_config.get_model('completions').name,
     prompt = txt,
     max_tokens = openai_config.get_max_tokens(),
     temperature = 0,
