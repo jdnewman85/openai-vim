@@ -46,7 +46,14 @@ function M.edits()
 end
 ]]--
 
-function M.buffer_context_insert_at_cursor() --TODO Rename
+function M.buffer_context_complete_line()
+  local stops = {
+    "\n"
+  }
+  return M.buffer_context_insert_at_cursor(stops)
+end
+
+function M.buffer_context_insert_at_cursor(stop) --TODO Rename --TODO TEMP stop parameter
   local current_window = 0
   local current_buffer = 0
   local cursor_row, cursor_column = unpack(vim.api.nvim_win_get_cursor(current_window))
@@ -69,6 +76,7 @@ function M.buffer_context_insert_at_cursor() --TODO Rename
     max_tokens = openai_config.get_max_tokens(),
     temperature = 0,
     stream = true,
+    stop = stop,
   }
 
   local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, cursor_row, cursor_column)
@@ -98,6 +106,7 @@ function M.complete_selection()
 --  vim.pretty_print(response_decoded)
   return response_decoded
 end
+
 
 function M._create_append_to_buffer_func(target_buffer, start_insert_row, start_insert_column)
   local insert_row = start_insert_row
