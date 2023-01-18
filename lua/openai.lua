@@ -45,14 +45,8 @@ local function request_edit_instruction(then_fn)
     then_fn
   )
 end
---[[ TODO
--- Prompt for instruction
--- Use whole buffer for now
--- Let's try this one without the stream
---  instead, on_stdout completion, replace the original text with the result
---    might be good to warn if not enough tokens to actually complete this?
-]]--
-function M.buffer_edit()
+
+function M.buffer_edit(append)
   request_edit_instruction(function(instruction)
     local current_buffer = 0
     local input = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, true)
@@ -62,32 +56,22 @@ function M.buffer_edit()
       input = input,
       instruction = instruction,
     }
+    --TODO Handle err
     local job = M.request("edits", data, function(err, data, job)
       vim.schedule(function()
-        print("TODO: Finish here")
-        print("Take data and replace buffer with it")
-        print("-------------------in on_stdout")
-        local response = vim.fn.json_decode(data) -- HEEEEEEEEEEEEEEERRRREEE - Can't be called in cb
-        print("response:")
-        vim.pretty_print(response)
+        local response = vim.fn.json_decode(data)
         response = response.choices[1].text
-        print("response2:")
-        vim.pretty_print(response)
         response = utils.string_split(response, "\n")
-        print("response3:")
-        vim.pretty_print(response)
-        vim.api.nvim_buf_set_lines(current_buffer, -1, -1, true, response) --TODO For now try to append
-        --[[
-        print"err:"
-        vim.pretty_print(err)
-        print"data:"
-        vim.pretty_print(data)
-        print"job"
-        vim.pretty_print(job)
-        ]]--
+        --vim.pretty_print(response)
+        local start_line = 0
+        if append then
+          start_line = -1
+        end
+        vim.api.nvim_buf_set_lines(current_buffer, start_line, -1, true, response)
+        print("Finished Edits")
       end)
     end)
-    vim.pretty_print(response_decoded)
+    --vim.pretty_print(response_decoded)
     return job
   end)
 end
