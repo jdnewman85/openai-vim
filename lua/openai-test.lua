@@ -7,6 +7,7 @@ vim.api.nvim_set_keymap("n", "<leader>oi", "<cmd>lua require('openai').buffer_co
 vim.api.nvim_set_keymap("n", "<leader>ol", "<cmd>lua require('openai').buffer_context_complete_line()<cr>", {})
 vim.api.nvim_set_keymap("n", "<leader>oe", "<cmd>lua require('openai').buffer_edit(false)<cr>", {})
 vim.api.nvim_set_keymap("n", "<leader>oE", "<cmd>lua require('openai').buffer_edit(true)<cr>", {})
+vim.api.nvim_set_keymap("v", "<leader>oe", "<cmd>lua require('openai').selection_edit()<cr>", {})
 --menu
 vim.api.nvim_set_keymap("n", "<leader>om", "<cmd>lua require('openai_menus').show_menu()<cr>", {})
 --config

@@ -76,6 +76,37 @@ function M.buffer_edit(append)
   end)
 end
 
+function M.selection_edit() --TODO Factor common portions with buffer_edit out
+  request_edit_instruction(function(instruction)
+    local current_buffer = 0
+    local select_start_row, select_start_column, select_end_row, select_end_column = utils.visual_selection_range()
+    if select_end_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
+      local end_line = vim.api.nvim_buf_get_lines(current_buffer, select_end_row, select_end_row+1, true)[1]
+      select_end_column = string.len(end_line)
+    end
+    local input = vim.api.nvim_buf_get_text(current_buffer, select_start_row, select_start_column, select_end_row, select_end_column, {})
+    input = utils.string_join(input, "\n")
+    local data = {
+      model = openai_config.get_current_model('edits').name,
+      input = input,
+      instruction = instruction,
+    }
+    --TODO Handle err
+    local job = M.request("edits", data, function(err, data, job)
+      vim.schedule(function()
+        local response = vim.fn.json_decode(data)
+        response = response.choices[1].text
+        response = utils.string_split(response, "\n")
+        table.remove(response) -- HACK - Edit seems to always append a newline?
+        vim.api.nvim_buf_set_text(current_buffer, select_start_row, select_start_column, select_end_row, select_end_column, response)
+        print("Finished Edits")
+      end)
+    end)
+    --vim.pretty_print(response_decoded)
+    return job
+  end)
+end
+
 function M.buffer_context_complete_line()
   local stops = {
     "\n"
@@ -91,7 +122,7 @@ function M.buffer_context_insert_at_cursor(stop) --TODO Rename --TODO TEMP stop 
   local last_line = vim.api.nvim_buf_get_lines(current_buffer, -2, -1, true)[1]
   local last_line_length = string.len(last_line)
 
-  -- Hack?
+  -- HACK?
   cursor_row = cursor_row - 1
 
   -- Get prefix/prompt - everything before cursor
