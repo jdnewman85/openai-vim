@@ -41,21 +41,15 @@ function M.find_model_by_name(models, name)
 end
 
 function M.filter_models_by_is_edit(models)
-  return func.filter(models, function(model)
-    return M.is_edit_model(model)
-  end)
-end
-
-function M.filter_models_by_is_edit(models)
-  return func.filter(models, M.is_edit_model(model))
+  return func.filter(models, M.is_edit_model)
 end
 
 function M.filter_models_by_is_text(models)
-  return func.filter(models, M.is_text_model(model))
+  return func.filter(models, M.is_text_model)
 end
 
 function M.filter_models_by_is_codex(models)
-  return func.filter(models, M.is_codex_model(model))
+  return func.filter(models, M.is_codex_model)
 end
 
 local function add_model_prices()
@@ -82,15 +76,7 @@ function M.get_all_models()
 end
 
 function M.get_endpoints()
-  local r = {}
-
-  --TODO Sort?
-  local endpoint_model_map = M.get_endpoint_model_map()
-  for endpoint in pairs(endpoint_model_map) do
-    table.insert(r, endpoint)
-  end
-
-  return r
+  return func.keys(M.get_endpoint_model_map())
 end
 
 function M.models_to_names(models)
@@ -100,18 +86,17 @@ function M.models_to_names(models)
 end
 
 function M.get_endpoint_model_map()
-  local endpoint_map = {}
-
-  for _, model in ipairs(all_models) do
+  return func.reduce(all_models, {}, function(acc, model)
     local endpoint = model.endpoint
-    if not endpoint_map[endpoint] then
-      endpoint_map[endpoint] = {}
+    if not acc[endpoint] then
+      acc[endpoint] = {}
     end
-    table.insert(endpoint_map[endpoint], model)
-  end
-
-  return endpoint_map
+    table.insert(acc[endpoint], model)
+    return acc
+  end)
 end
+
+
 
 function M.guess_price_per_1kt(model)
   --Takes model or model name
