@@ -96,8 +96,6 @@ function M.get_endpoint_model_map()
   end)
 end
 
-
-
 function M.guess_price_per_1kt(model)
   --Takes model or model name
   local model_name = model

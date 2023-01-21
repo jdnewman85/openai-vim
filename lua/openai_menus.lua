@@ -26,6 +26,7 @@ end
 
 local function choose_model_endpoint_menu()
   local endpoints = openai_models.get_endpoints()
+  table.sort(endpoints)
 
   vim.ui.select(
     endpoints,
