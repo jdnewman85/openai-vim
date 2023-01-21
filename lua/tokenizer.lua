@@ -51,7 +51,10 @@ end
 function M.connect_or_start()
   local a = get_address_if_already_running()
   if not a then
-    return M.start_server()
+    --TODO Add an option to run the tokenizer per request
+    --TODO TEMP Disabled due to orphaned server issue
+    --return M.start_server()
+    print("Tokenizer not running!")
   end
 
   --print("Found server: " .. a)
