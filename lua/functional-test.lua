@@ -41,9 +41,12 @@ vim.pretty_print(c)
 ]]--
 
 -- reduce
+--[[
 all_names = func.reduce(names, "Names: ",
   function(acc, item)
     return acc .. item .. ", "
   end
 )
 vim.pretty_print(all_names)
+]]--
+

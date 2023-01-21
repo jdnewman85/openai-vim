@@ -7,7 +7,7 @@ local openai_config = require('openai_config')
 local M = {}
 
 local function choose_model_menu(endpoint)
-  local models = openai_models.get_models_by_endpoint(endpoint)
+  local models = openai_models.filter_models_by_endpoint(endpoint)
   local model_names = openai_models.models_to_names(models)
   vim.ui.select(
     model_names,

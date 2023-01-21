@@ -1,32 +1,46 @@
 local M = {}
 
--- filter(collection, predicate)
 function M.filter(collection, predicate)
-    local result = {}
-    for _, v in ipairs(collection) do
-        if predicate(v) then
-            table.insert(result, v)
-        end
+  local result = {}
+  for _, v in ipairs(collection) do
+    if predicate(v) then
+      table.insert(result, v)
     end
-    return result
+  end
+  return result
 end
 
--- map(collection, transform)
 function M.map(collection, transform)
-    local result = {}
-    for _, v in ipairs(collection) do
-        table.insert(result, transform(v))
-    end
-    return result
+  local result = {}
+  for _, v in ipairs(collection) do
+    table.insert(result, transform(v))
+  end
+  return result
 end
 
--- reduce(collection, initial, reducer)
 function M.reduce(collection, initial, reducer)
-    local result = initial
-    for _, v in ipairs(collection) do
-        result = reducer(result, v)
+  local result = initial
+  for _, v in ipairs(collection) do
+    result = reducer(result, v)
+  end
+  return result
+end
+
+function M.find(collection, predicate)
+  for _, v in ipairs(collection) do
+    if predicate(v) then
+      return v
     end
-    return result
+  end
+end
+
+function M.contains(collection, item)
+  for _, v in ipairs(collection) do
+    if v == item then
+      return v
+    end
+  end
+  return false
 end
 
 return M

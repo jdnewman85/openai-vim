@@ -1,3 +1,5 @@
+local func = require('functional')
+
 local M = {}
 
 --TODO Add cost quess to model
@@ -26,54 +28,34 @@ function M.get_endpoint_defaults(codex)
 end
 
 --TODO Replace many model functions with methods
---TODO Replace with more generic filter, etc functions
 function M.filter_models_by_endpoint(models, endpoint)
-  local r = {}
-  for _, model in ipairs(models) do
-    if model.endpoint == endpoint then
-      table.insert(r, model)
-    end
-  end
-  return r
+  return func.filter(models, function(model)
+    return model.endpoint == endpoint
+  end)
 end
 
 function M.find_model_by_name(models, name)
-  for _, model in ipairs(models) do
-    if model.name == name then
-     return model
-    end
-  end
-  return nil
+  return func.find(models, function(model)
+    return model.name == name
+  end)
 end
 
 function M.filter_models_by_is_edit(models)
-  local r = {}
-  for _, model in ipairs(models) do
-    if M.is_edit_model(model) then
-      table.insert(r, model)
-    end
-  end
-  return r
+  return func.filter(models, function(model)
+    return M.is_edit_model(model)
+  end)
+end
+
+function M.filter_models_by_is_edit(models)
+  return func.filter(models, M.is_edit_model(model))
 end
 
 function M.filter_models_by_is_text(models)
-  local r = {}
-  for _, model in ipairs(models) do
-    if M.is_text_model(model) then
-      table.insert(r, model)
-    end
-  end
-  return r
+  return func.filter(models, M.is_text_model(model))
 end
 
 function M.filter_models_by_is_codex(models)
-  local r = {}
-  for _, model in ipairs(models) do
-    if M.is_codex_model(model) then
-      table.insert(r, model)
-    end
-  end
-  return r
+  return func.filter(models, M.is_codex_model(model))
 end
 
 local function add_model_prices()
@@ -112,11 +94,9 @@ function M.get_endpoints()
 end
 
 function M.models_to_names(models)
-  local r = {}
-  for _, model in ipairs(models) do
-    table.insert(r, model.name)
-  end
-  return r
+  return func.map(models, function(model)
+    return model.name
+  end)
 end
 
 function M.get_endpoint_model_map()
@@ -131,17 +111,6 @@ function M.get_endpoint_model_map()
   end
 
   return endpoint_map
-end
-
-function M.get_models_by_endpoint(endpoint)
-  --TODO null checks for iterators
-  local r = {}
-  for _, model in ipairs(all_models) do
-    if model.endpoint == endpoint then
-      table.insert(r, model)
-    end
-  end
-  return r
 end
 
 function M.guess_price_per_1kt(model)
