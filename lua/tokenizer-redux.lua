@@ -84,12 +84,30 @@ function bpe_char_encoder()
   return r
 end
 
-function bpe_char_decoder()
-  local r = {}
-  for k, v in pairs(bpe_char_encoder()) do --TODO OPT
-    r[v] = k
+function bpe_char_decoder() -- TODO OPT
+  return utils.swap_kv(bpe_char_encoder())
+end
+
+function bpe_token_encoder(filename)
+  local file = vim.fn.join(vim.fn.readfile(filename))
+  return vim.json.decode(file)
+end
+
+function bpe_token_decoder(filename) --TODO OPT
+  return utils.swap_kv(bpe_token_encoder(filename))
+end
+
+function bpe_ranks(filename)
+  local file_lines = vim.fn.readfile(filename)
+  --First line is a comment
+  table.remove(file_lines, 1) --OPT? Expensive
+
+  local bpe_ranks = {}
+  for rank, bpe_pair in ipairs(file_lines) do
+    bpe_ranks[bpe_pair] = rank
   end
-  return r
+
+  return bpe_ranks
 end
 
 --[[
