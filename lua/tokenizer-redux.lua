@@ -1,22 +1,5 @@
-function table_concat_single(t1, t2)
-  for i = 1, #t2 do
-    t1[#t1+1] = t2[i]
-  end
-  return t1
-end
-
-function table_concat(t1, ...)
-  local arg = {...}
-  for _, t2 in ipairs(arg) do
-    local t2_new = t2
-    if not (type(t2_new) == "table") then
-      t2_new = { t2_new }
-    end
-    t1 = table_concat_single(t1, t2_new)
-  end
-  return t1
-end
-
+local utf8 = require("utf8")
+local utils = require("utils")
 
 local contractions = {
   "'s",
@@ -32,7 +15,7 @@ local numeric = opt_space.."%d+"
 local others = opt_space.."[^%s%a%d]+"
 local spaces = "%s+"
 
-local pats = table_concat(
+local pats = utils.table_concat(
   contractions,
   alpha,
   numeric,
@@ -63,10 +46,65 @@ function pat(s)
     end
   end
 
+  return r
+end
+
+function is_valid_bpe_char(c)
+  local valid_ranges = {
+    {'!', '~'},
+    {'¡', '¬'},
+    {'®', 'ÿ'},
+  }
+
+  for _, range in ipairs(valid_ranges) do
+    local range_min, range_max = unpack(range)
+    range_min = utf8.codepoint(range_min)
+    range_max = utf8.codepoint(range_max)
+    if c >= range_min and c <= range_max then
+      return true
+    end
+  end
+
+  return false
+end
+
+function bpe_char_encoder()
+  local r = {}
+
+  local n = 0 --Current re-map offset
+  for i = 0,255 do
+    if is_valid_bpe_char(i) then
+      r[i] = utf8.char(i)
+    else
+      r[i] = utf8.char(n+256)
+      n = n + 1
+    end
+  end
 
   return r
 end
 
+function bpe_char_decoder()
+  local r = {}
+  for k, v in pairs(bpe_char_encoder()) do --TODO OPT
+    r[v] = k
+  end
+  return r
+end
+
+--[[
 local test = "This is a test!\nY'all here? We'll be wait'in 'ver 'here !!!!!!!! We's all's good's?"
 local t = pat(test)
 vim.pretty_print(t)
+]]--
+
+--[[
+print("----------------")
+local btu = bpe_char_encoder()
+local utb = bpe_char_decoder()
+
+local a = btu[32]
+vim.pretty_print(a)
+local b = utf8.char(utb[a])
+vim.pretty_print(b)
+]]--
