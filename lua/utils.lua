@@ -133,4 +133,21 @@ function M.combine_tables(t1, t2)
   return t1
 end
 
+function M.table_concat(t1, ...)
+  local args = {...}
+  for _, arg in ipairs(args) do
+    local t2 = arg
+    -- Handle non-tables by wrapping them
+    if not (type(t2) == "table") then
+      t2 = { t2 }
+    end
+
+    -- Actual concat
+    for i = 1, #t2 do
+      t1[#t1+1] = t2[i]
+    end
+  end
+  return t1
+end
+
 return M
