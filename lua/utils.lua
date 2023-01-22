@@ -150,4 +150,13 @@ function M.table_concat(t1, ...)
   return t1
 end
 
+function M.swap_kv(t)
+  local r = {}
+  for k,v in pairs(t) do
+    r[v] = k
+  end
+  return r
+end
+
+
 return M
