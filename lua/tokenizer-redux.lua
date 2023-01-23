@@ -74,10 +74,14 @@ function bpe_char_encoder()
 
   local n = 0 --Current re-map offset
   for i = 0,255 do
+    local i_as_char = utf8.char(i)
     if is_valid_bpe_char(i) then
-      r[i] = utf8.char(i)
+      r[i] = i_as_char
+      r[i_as_char] = i_as_char
     else
-      r[i] = utf8.char(n+256)
+      local mapped_char = utf8.char(n+256)
+      r[i] = mapped_char
+      r[i_as_char] = mapped_char
       n = n + 1
     end
   end
@@ -127,7 +131,7 @@ end
 function consecutive_pairs(word)
   local word_length = #word
   if word_length <= 1 then
-    return word
+    return {word}
   end
 
   local r = {}
@@ -137,16 +141,16 @@ function consecutive_pairs(word)
   return r
 end
 
-function bpe_word_from_string(token)
+function bpe_word_from_string(text)
   local r = {}
-  for char in string.gmatch(token, '.') do
-    table.insert(r, char)
+  for _, c in utf8.codes(text) do
+    table.insert(r, c)
   end
   return r
 end
 
-function tokenizer_bpe(tokenizer, token) --TODO OOP
-  local word = bpe_word_from_string(token)
+function tokenizer_bpe(tokenizer, text) --TODO OOP
+  local word = bpe_word_from_string(text)
 
   while true do
     local symbol_pairs = consecutive_pairs(word)
@@ -184,6 +188,46 @@ function tokenizer_bpe(tokenizer, token) --TODO OOP
   end
 end
 
+function tokenizer_tokenize(tokenizer, text)
+  --text -> pat tokens
+  local pat_tokens = pat(text)
+
+  --pat tokens -> byte encoded pat tokens
+  local be_pat_tokens = {}
+  for _, pat_token in ipairs(pat_tokens) do
+    local be_chars = {}
+    for _, c in utf8.codes(pat_token) do
+      local be_char = tokenizer.byte_encoder[c]
+      if not be_char then
+        error("Unhandled byte_endcoder index: '"..c.."'")
+      end
+      table.insert(be_chars, be_char)
+    end
+    local be_pat_token = table.concat(be_chars)
+    table.insert(be_pat_tokens, be_pat_token)
+  end
+
+  --byte encoded pat tokens -> byte pair encoded tokens
+  local bpe_tokens = {}
+  for _, be_pat_token in ipairs(be_pat_tokens) do
+    local more_tokens = tokenizer_bpe(tokenizer, be_pat_token)
+    utils.table_concat(bpe_tokens, more_tokens)
+  end
+
+  --byte pair encoded tokens -> fully encoded tokens
+  local tokens = {}
+  for _, bpe_token in ipairs(bpe_tokens) do
+    local token = tokenizer.token_encoder[bpe_token]
+    if not token then
+      error("Unhandled token_endcoder index: '"..token.."'")
+    end
+    table.insert(tokens, token)
+  end
+
+  return tokens
+end
+
 local tokenizer = new_tokenizer("/home/sci")
-local test_bpe = tokenizer_bpe(tokenizer, "!!!!!!!!")
-vim.pretty_print(test_bpe)
+local test = tokenizer_tokenize(tokenizer, "This is a test!\nY'all like it? !!!!!!! !!!!!!!!")
+vim.pretty_print(test)
+vim.pretty_print(#test)
