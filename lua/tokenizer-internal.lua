@@ -231,20 +231,14 @@ function M.tokenizer_tokenize(tokenizer, text)
 end
 
 function M.tokenizer_detokenize(tokenizer, tokens)
-  --tokens -> char encoded tokens
-  local char_encoded_tokens = {}
+  local text_chars = {}
   for _, token in ipairs(tokens) do
-    table.insert(char_encoded_tokens, tokenizer.token_decoder[token])
-  end
-  --char encoded tokens -> decoded tokens
-  local almost_text = {}
-  for _, token in ipairs(char_encoded_tokens) do
-    for _, c in utf8.codes(token) do
-      table.insert(almost_text, tokenizer.byte_decoder[c])
+    local char_encoded_token = tokenizer.token_decoder[token]
+    for _, c in utf8.codes(char_encoded_token) do
+      table.insert(text_chars, tokenizer.byte_decoder[c])
     end
   end
-  --char encoded tokens -> tokens text
-  return table.concat(almost_text)
+  return table.concat(text_chars)
 end
 
 --TODO REM or replace
