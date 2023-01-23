@@ -76,11 +76,13 @@ function bpe_char_encoder()
   for i = 0,255 do
     local i_as_char = utf8.char(i)
     if is_valid_bpe_char(i) then
-      r[i] = i_as_char
+      --TODO BUG - This is incompatible with the simple decoder swap_kv method
+      --r[i] = i_as_char
       r[i_as_char] = i_as_char
     else
       local mapped_char = utf8.char(n+256)
-      r[i] = mapped_char
+      --TODO BUG - This is incompatible with the simple decoder swap_kv method
+      --r[i] = mapped_char
       r[i_as_char] = mapped_char
       n = n + 1
     end
@@ -192,7 +194,7 @@ function tokenizer_tokenize(tokenizer, text)
   --text -> pat tokens
   local pat_tokens = pat(text)
 
-  --pat tokens -> byte encoded pat tokens
+  --pat tokens -> char encoded pat tokens
   local be_pat_tokens = {}
   for _, pat_token in ipairs(pat_tokens) do
     local be_chars = {}
@@ -207,7 +209,7 @@ function tokenizer_tokenize(tokenizer, text)
     table.insert(be_pat_tokens, be_pat_token)
   end
 
-  --byte encoded pat tokens -> byte pair encoded tokens
+  --char encoded pat tokens -> byte pair encoded tokens
   local bpe_tokens = {}
   for _, be_pat_token in ipairs(be_pat_tokens) do
     local more_tokens = tokenizer_bpe(tokenizer, be_pat_token)
@@ -227,7 +229,29 @@ function tokenizer_tokenize(tokenizer, text)
   return tokens
 end
 
+function tokenizer_detokenize(tokenizer, tokens)
+  --tokens -> char encoded tokens
+  local char_encoded_tokens = {}
+  for _, token in ipairs(tokens) do
+    table.insert(char_encoded_tokens, tokenizer.token_decoder[token])
+  end
+  --char encoded tokens -> decoded tokens
+  local almost_text = {}
+  for _, token in ipairs(char_encoded_tokens) do
+    for _, c in utf8.codes(token) do
+      table.insert(almost_text, tokenizer.byte_decoder[c])
+    end
+  end
+  --char encoded tokens -> tokens text
+  return table.concat(almost_text)
+end
+
 local tokenizer = new_tokenizer("/home/sci")
-local test = tokenizer_tokenize(tokenizer, "This is a test!\nY'all like it? !!!!!!! !!!!!!!!")
+local text = "This is a test!\nY'all like it? !!!!!!! !!!!!!!!"
+vim.pretty_print(text)
+local test = tokenizer_tokenize(tokenizer, text)
 vim.pretty_print(test)
 vim.pretty_print(#test)
+
+local back = tokenizer_detokenize(tokenizer, test)
+vim.pretty_print(back)
