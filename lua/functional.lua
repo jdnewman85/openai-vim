@@ -1,5 +1,7 @@
 local M = {}
 
+--TODO Generators? Ranges?
+
 function M.filter(collection, predicate)
   local result = {}
   for _, v in pairs(collection) do

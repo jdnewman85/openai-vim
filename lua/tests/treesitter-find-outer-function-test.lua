@@ -3,7 +3,7 @@
 
 
 local ts = vim.treesitter
-local ts_utils = require 'nvim-treesitter.ts_utils'
+local ts_utils = require('nvim-treesitter.ts_utils')
 
 local function_node_names={
   'function_declaration',

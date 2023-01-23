@@ -1,6 +1,6 @@
 local utf8 = require("utf8")
 local utils = require("utils")
---local func = require("functional") --TODO use
+--local func = require("functional") --TODO use? Eval performance? Itterators?
 
 local contractions = {
   "'s",
@@ -11,16 +11,16 @@ local contractions = {
   "'d",
 }
 local opt_space = " ?"
-local alpha = opt_space.."%a+"
-local numeric = opt_space.."%d+"
-local others = opt_space.."[^%s%a%d]+"
+local opt_space_alpha = opt_space.."%a+"
+local opt_space_numeric = opt_space.."%d+"
+local opt_space_others = opt_space.."[^%s%a%d]+"
 local spaces = "%s+"
 
 local pats = utils.table_concat(
   contractions,
-  alpha,
-  numeric,
-  others,
+  opt_space_alpha,
+  opt_space_numeric,
+  opt_space_others,
   spaces
 )
 
@@ -262,21 +262,5 @@ function M.tokenizer_token_list(tokenizer, text)
   end
   return token_list
 end
-
-
---[[
-local tokenizer = new_tokenizer("/home/sci")
-local text = "This is a test!\nY'all like it? !!!!!!! !!!!!!!!"
-vim.pretty_print(text)
-local test = M.tokenizer_tokenize(tokenizer, text)
-vim.pretty_print(test)
-vim.pretty_print(#test)
-
-local back = M.tokenizer_detokenize(tokenizer, test)
-vim.pretty_print(back)
-
-local tl = tokenizer_token_list(tokenizer, text)
-vim.pretty_print(tl)
-]]--
 
 return M

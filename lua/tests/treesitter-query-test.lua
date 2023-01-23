@@ -28,7 +28,7 @@ ts_utils.update_selection(bufnr, node)
 
 -- Find all functions via query
 local ts = vim.treesitter
-local ts_utils = require 'nvim-treesitter.ts_utils'
+local ts_utils = require('nvim-treesitter.ts_utils')
 
 local query = [[
     (function_declaration) @matchMe

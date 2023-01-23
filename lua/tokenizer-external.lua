@@ -15,6 +15,7 @@ local server_job = nil
 
 function get_address_if_already_running()
   --print("Checking if server is running...")
+  --TODO Somehow make this more portable
   --Use ss
   local result = utils.trim_ws(vim.fn.system("ss -lntp | grep \"bpe_tokenizer\" | awk '{print $4}'"))
   if utils.is_empty_string(result) then

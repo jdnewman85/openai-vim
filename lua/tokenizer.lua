@@ -1,5 +1,6 @@
 local utils = require("utils")
 
+-- TODO Allow user config to choose
 local tokenizer = require("tokenizer-internal")
 --local tokenizer = require("tokenizer-external")
 
@@ -33,7 +34,6 @@ end
 
 function M.tokenize(text)
   --print("Tokenizing: '" .. text .. "'")
-
   return tokenizer.tokenizer_token_list(_tokenizer, text) --TODO OMG....
 end
 
@@ -41,7 +41,7 @@ function M.highlight_tokens(tokens, buffer, start_line, start_column)
   highlight_namespace = vim.api.nvim_create_namespace("TokenizerHighlights")
   local current_col = start_column
   local current_line_num = start_line
-  print("Tokens: " .. #tokens)
+  --print("Tokens: " .. #tokens)
   for i, v in ipairs(tokens) do
     local current_highlight_num = (i % #highlight_colors) + 1
     local current_highlight = highlight_colors[current_highlight_num]
@@ -55,23 +55,6 @@ function M.highlight_tokens(tokens, buffer, start_line, start_column)
       current_line_num = current_line_num + num_newlines
     end
   end
-end
-
-function M.highlight_tokens_extmark(tokens, buffer, start_line, start_column)
-  highlight_namespace = vim.api.nvim_create_namespace("TokenizerHighlights")
-  local current_col = start_column
-  local current_line_num = start_line
-  print("Tokens: " .. #tokens)
-  local virt_text = {}
-  for i, v in ipairs(tokens) do
-    local current_highlight_num = (i % #highlight_colors) + 1
-    local current_highlight = highlight_colors[current_highlight_num]
-    local symbol = v["symbol"]
-    table.insert(virt_text, {symbol, current_highlight})
-  end
-    vim.api.nvim_buf_set_extmark(buffer, highlight_namespace, current_line_num, current_col, {
-      virt_text = virt_text,
-    })
 end
 
 function M.tokenize_selected_text()
@@ -89,8 +72,6 @@ function M.tokenize_selected_text()
   --TODO Place at the end line/col of selection?
   vim.api.nvim_buf_set_extmark(buffer, highlight_namespace, start_line, start_col, {
     virt_text = {{"Tokens: ".. #response, "Whitespace"}},
---    virt_lines = {virt_text},
---    sign_text = "AI",
   })
   return response
 end

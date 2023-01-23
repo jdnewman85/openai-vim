@@ -125,7 +125,7 @@ function M.guess_price_per_1kt(model)
   end
 
   --Not recognized
-  return 9999.99 --TODO Replace magic
+  return math.huge
 end
 
 add_model_prices()

@@ -2,7 +2,6 @@ local openai_models = require('openai_models')
 local openai_config = require('openai_config')
 
 -- TODO Handle cancels gracefully
--- TODO Add setting of actual values
 
 local M = {}
 
