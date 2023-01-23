@@ -1,5 +1,6 @@
 local utf8 = require("utf8")
 local utils = require("utils")
+--local func = require("functional") --TODO use
 
 local contractions = {
   "'s",
@@ -110,19 +111,79 @@ function bpe_ranks(filename)
   return bpe_ranks
 end
 
---[[
-local test = "This is a test!\nY'all here? We'll be wait'in 'ver 'here !!!!!!!! We's all's good's?"
-local t = pat(test)
-vim.pretty_print(t)
-]]--
 
---[[
-print("----------------")
-local btu = bpe_char_encoder()
-local utb = bpe_char_decoder()
+function new_tokenizer(model_dir)
+  local r = {}
 
-local a = btu[32]
-vim.pretty_print(a)
-local b = utf8.char(utb[a])
-vim.pretty_print(b)
-]]--
+  r.byte_encoder = bpe_char_encoder()
+  r.byte_decoder = bpe_char_decoder()
+  r.token_encoder = bpe_token_encoder(model_dir.."/encoder.json")
+  r.token_decoder = bpe_token_decoder(model_dir.."/encoder.json")
+  r.bpe_ranks = bpe_ranks(model_dir.."/vocab.bpe")
+
+  return r
+end
+
+function consecutive_pairs(word)
+  local word_length = #word
+  if word_length <= 1 then
+    return word
+  end
+
+  local r = {}
+  for i = 1,#word-1 do
+    table.insert(r, {word[i], word[i+1]})
+  end
+  return r
+end
+
+function bpe_word_from_string(token)
+  local r = {}
+  for char in string.gmatch(token, '.') do
+    table.insert(r, char)
+  end
+  return r
+end
+
+function tokenizer_bpe(tokenizer, token) --TODO OOP
+  local word = bpe_word_from_string(token)
+
+  while true do
+    local symbol_pairs = consecutive_pairs(word)
+    local min_bigram = nil
+    local min_rank = math.huge
+
+    for _, pair in ipairs(symbol_pairs) do
+      local bigram_key = table.concat(pair, " ")
+      local rank = tokenizer.bpe_ranks[bigram_key]
+      if rank and rank < min_rank then
+        min_bigram = pair
+        min_rank = rank
+      end
+    end
+    if not min_bigram then
+      return word
+    end
+
+    local next_word = {}
+    local i = 1
+    while i <= #word do
+      if i ~= #word and min_bigram[1] == word[i] and min_bigram[2] == word[i+1] then
+        table.insert(next_word, table.concat(min_bigram))
+        i = i + 1
+      else
+        table.insert(next_word, word[i])
+      end
+      i = i + 1
+    end
+
+    word = next_word
+    if #word == 1 then
+      return word
+    end
+  end
+end
+
+local tokenizer = new_tokenizer("/home/sci")
+local test_bpe = tokenizer_bpe(tokenizer, "!!!!!!!!")
+vim.pretty_print(test_bpe)
