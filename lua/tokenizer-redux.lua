@@ -246,6 +246,22 @@ function tokenizer_detokenize(tokenizer, tokens)
   return table.concat(almost_text)
 end
 
+--TODO REM or replace
+function tokenizer_token_list(tokenizer, text)
+  local tokens = tokenizer_tokenize(tokenizer, text)
+  local token_list = {}
+  for _, token in ipairs(tokens) do
+    local symbol = tokenizer_detokenize(tokenizer, {token})
+    table.insert(token_list,
+      {
+        symbol = symbol,
+        token = token,
+      }
+    )
+  end
+  return token_list
+end
+
 local tokenizer = new_tokenizer("/home/sci")
 local text = "This is a test!\nY'all like it? !!!!!!! !!!!!!!!"
 vim.pretty_print(text)
@@ -255,3 +271,6 @@ vim.pretty_print(#test)
 
 local back = tokenizer_detokenize(tokenizer, test)
 vim.pretty_print(back)
+
+local tl = tokenizer_token_list(tokenizer, text)
+vim.pretty_print(tl)
