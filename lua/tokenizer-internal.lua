@@ -117,8 +117,9 @@ function bpe_ranks(filename)
   return bpe_ranks
 end
 
+local M = {}
 
-function new_tokenizer(model_dir)
+function M.new_tokenizer(model_dir)
   local r = {}
 
   r.byte_encoder = bpe_char_encoder()
@@ -190,7 +191,7 @@ function tokenizer_bpe(tokenizer, text) --TODO OOP
   end
 end
 
-function tokenizer_tokenize(tokenizer, text)
+function M.tokenizer_tokenize(tokenizer, text)
   --text -> pat tokens
   local pat_tokens = pat(text)
 
@@ -229,7 +230,7 @@ function tokenizer_tokenize(tokenizer, text)
   return tokens
 end
 
-function tokenizer_detokenize(tokenizer, tokens)
+function M.tokenizer_detokenize(tokenizer, tokens)
   --tokens -> char encoded tokens
   local char_encoded_tokens = {}
   for _, token in ipairs(tokens) do
@@ -247,11 +248,11 @@ function tokenizer_detokenize(tokenizer, tokens)
 end
 
 --TODO REM or replace
-function tokenizer_token_list(tokenizer, text)
-  local tokens = tokenizer_tokenize(tokenizer, text)
+function M.tokenizer_token_list(tokenizer, text)
+  local tokens = M.tokenizer_tokenize(tokenizer, text)
   local token_list = {}
   for _, token in ipairs(tokens) do
-    local symbol = tokenizer_detokenize(tokenizer, {token})
+    local symbol = M.tokenizer_detokenize(tokenizer, {token})
     table.insert(token_list,
       {
         symbol = symbol,
@@ -262,15 +263,20 @@ function tokenizer_token_list(tokenizer, text)
   return token_list
 end
 
+
+--[[
 local tokenizer = new_tokenizer("/home/sci")
 local text = "This is a test!\nY'all like it? !!!!!!! !!!!!!!!"
 vim.pretty_print(text)
-local test = tokenizer_tokenize(tokenizer, text)
+local test = M.tokenizer_tokenize(tokenizer, text)
 vim.pretty_print(test)
 vim.pretty_print(#test)
 
-local back = tokenizer_detokenize(tokenizer, test)
+local back = M.tokenizer_detokenize(tokenizer, test)
 vim.pretty_print(back)
 
 local tl = tokenizer_token_list(tokenizer, text)
 vim.pretty_print(tl)
+]]--
+
+return M
