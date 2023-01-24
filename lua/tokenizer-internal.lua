@@ -192,11 +192,11 @@ function tokenizer_bpe(tokenizer, text) --TODO OOP
 end
 
 function M.tokenizer_tokenize(tokenizer, text)
+  local tokens = {}
+
   --text -> pat tokens
   local pat_tokens = pat(text)
-
   --pat tokens -> char encoded pat tokens
-  local be_pat_tokens = {}
   for _, pat_token in ipairs(pat_tokens) do
     local be_chars = {}
     for _, c in utf8.codes(pat_token) do
@@ -207,24 +207,17 @@ function M.tokenizer_tokenize(tokenizer, text)
       table.insert(be_chars, be_char)
     end
     local be_pat_token = table.concat(be_chars)
-    table.insert(be_pat_tokens, be_pat_token)
-  end
 
-  --char encoded pat tokens -> byte pair encoded tokens
-  local bpe_tokens = {}
-  for _, be_pat_token in ipairs(be_pat_tokens) do
-    local more_tokens = tokenizer_bpe(tokenizer, be_pat_token)
-    utils.table_concat(bpe_tokens, more_tokens)
-  end
-
-  --byte pair encoded tokens -> fully encoded tokens
-  local tokens = {}
-  for _, bpe_token in ipairs(bpe_tokens) do
-    local token = tokenizer.token_encoder[bpe_token]
-    if not token then
-      error("Unhandled token_endcoder index: '"..token.."'")
+    --char encoded pat tokens -> byte pair encoded tokens
+    local bpe_tokens = tokenizer_bpe(tokenizer, be_pat_token)
+    --byte pair encoded tokens -> fully encoded tokens
+    for _, bpe_token in ipairs(bpe_tokens) do
+      local token = tokenizer.token_encoder[bpe_token]
+      if not token then
+        error("Unhandled token_endcoder index: '"..token.."'")
+      end
+      table.insert(tokens, token)
     end
-    table.insert(tokens, token)
   end
 
   return tokens
@@ -242,7 +235,9 @@ function M.tokenizer_detokenize(tokenizer, tokens)
 end
 
 --TODO REM or replace
+local profile_n = 0
 function M.tokenizer_token_list(tokenizer, text)
+  utils.prof_start("/home/sci/prof/tokenizer/tokenizer_token_list-"..profile_n..".log")
   local tokens = M.tokenizer_tokenize(tokenizer, text)
   local token_list = {}
   for _, token in ipairs(tokens) do
@@ -254,6 +249,7 @@ function M.tokenizer_token_list(tokenizer, text)
       }
     )
   end
+  utils.prof_stop()
   return token_list
 end
 

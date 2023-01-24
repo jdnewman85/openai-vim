@@ -158,5 +158,13 @@ function M.swap_kv(t)
   return r
 end
 
+local p = require("jit.p")
+function M.prof_start(filename)
+  p.start("20,s,m0,G", filename)
+end
+function M.prof_stop()
+  p.stop()
+end
+
 
 return M
