@@ -4,18 +4,31 @@ local M = {}
 
 function M.filter(collection, predicate)
   local result = {}
-  for _, v in pairs(collection) do
+  for k, v in pairs(collection) do
     if predicate(v) then
-      table.insert(result, v)
+      if type(k) == "number" then
+        table.insert(result, v)
+      else
+        result[k] = v
+      end
     end
   end
   return result
 end
 
-function M.map(collection, transform)
+function M.map_to_array()
   local result = {}
   for _, v in pairs(collection) do
-    table.insert(result, transform(v))
+    table.insert(result, v)
+  end
+  return result
+end
+
+--TODO Evaluate whether transform should take key, and whether that should also be transformed?
+function M.map(collection, transform)
+  local result = {}
+  for k, v in pairs(collection) do
+    result[k] = transform(v)
   end
   return result
 end
@@ -29,7 +42,7 @@ function M.reduce(collection, initial, reducer)
 end
 
 function M.find(collection, predicate)
-  for _, v in pairs(collection) do
+  for k, v in pairs(collection) do
     if predicate(v) then
       return v
     end
