@@ -12,40 +12,6 @@ local record Model
   is_text: function(Model): boolean
 end
 
-function Model.new(name: string, endpoint: string, max_tokens: number): Model
-  return setmetatable({
-    name = name,
-    endpoint = endpoint,
-    max_tokens = max_tokens,
-  }, { __index = Model })
-end
-
-local record Models
-  {Model}
-
-  get_endpoint_defaults: function(boolean): {string: Model}
-
-  filter_is_codex: function(Models): Models
-  filter_is_edit: function(Models): Models
-  filter_is_text: function(Models): Models
-  filter_by_endpoint: function(Models, string): Models
-  find_model_by_name: function(Models, string): Model
-  names: function(Models): {string}
-end
-
-local function default_models(): Models
-  return setmetatable({
-    Model.new('text-davinci-003',      'completions', 4000),
-    Model.new('text-curie-001',        'completions', 2048),
-    Model.new('text-babbage-001',      'completions', 2048),
-    Model.new('text-ada-001',          'completions', 2048),
-    Model.new('code-davinci-002',      'completions', 8000),
-    Model.new('code-cushman-001',      'completions', 2048),
-    Model.new('text-davinci-edit-001', 'edits',       nil ),
-    Model.new('code-davinci-edit-001', 'edits',       nil ),
-  }, { __index = Models })
-end
-
 local function is_codex_model(model: Model): boolean
   return string.find(model.name, 'code') ~= nil
 end
@@ -58,6 +24,13 @@ local function is_text_model(model: Model): boolean
   return string.find(model.name, 'text') ~= nil
 end
 
+function Model.new(name: string, endpoint: string, max_tokens: number): Model
+  return setmetatable({
+    name = name,
+    endpoint = endpoint,
+    max_tokens = max_tokens,
+  }, { __index = Model })
+end
 
 function Model:is_codex(): boolean
   return is_codex_model(self)
@@ -69,6 +42,38 @@ end
 
 function Model:is_text(): boolean
   return is_text_model(self)
+end
+
+local record Models
+  {Model}
+
+  defaults: function(): Models
+
+  get_endpoint_defaults: function(boolean): {string: Model}
+
+  filter_is_codex: function(Models): Models
+  filter_is_edit: function(Models): Models
+  filter_is_text: function(Models): Models
+  filter_by_endpoint: function(Models, string): Models
+  find_by_name: function(Models, string): Model
+  names: function(Models): {string}
+  get_endpoint_model_map: function(Models): EndpointModelMap
+  endpoints: function(Models): {string}
+
+  metamethod __index: Models
+end
+
+function Models.defaults(): Models
+  return setmetatable({
+    Model.new('text-davinci-003',      'completions', 4000),
+    Model.new('text-curie-001',        'completions', 2048),
+    Model.new('text-babbage-001',      'completions', 2048),
+    Model.new('text-ada-001',          'completions', 2048),
+    Model.new('code-davinci-002',      'completions', 8000),
+    Model.new('code-cushman-001',      'completions', 2048),
+    Model.new('text-davinci-edit-001', 'edits',       nil ),
+    Model.new('code-davinci-edit-001', 'edits',       nil ),
+  }, { __index = Models })
 end
 
 function Models:filter_is_codex(): Models
@@ -91,7 +96,7 @@ end
 
 function Models.get_endpoint_defaults(codex: boolean): {string: Model}
   --TODO User defined defaults
-  local models = default_models()
+  local models = Models.defaults()
   if codex then
     models = models:filter_is_codex()
   end
@@ -103,7 +108,7 @@ function Models.get_endpoint_defaults(codex: boolean): {string: Model}
 end
 
 --TODO Replace many model functions with methods
-function Models:find_model_by_name(name: string): Model
+function Models:find_by_name(name: string): Model
   return func.find_i(self, function(model: Model): boolean
     return model.name == name
   end) as Model
