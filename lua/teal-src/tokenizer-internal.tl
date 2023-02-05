@@ -1,4 +1,4 @@
-local utf8 = require("utf8")
+local utf8_ = require("utf8") --TODO Make teal issue - Don't bring in compat stdlib if turned off
 local utils = require("utils")
 --local func = require("functional") --TODO use? Eval performance? Iterators?
 
@@ -60,8 +60,8 @@ local function is_valid_bpe_char(c: integer): boolean
 
   for _, range in ipairs(valid_ranges) do
     local _range_min, _range_max = unpack(range)
-    local range_min = utf8.codepoint(_range_min)
-    local range_max = utf8.codepoint(_range_max)
+    local range_min = utf8_.codepoint(_range_min)
+    local range_max = utf8_.codepoint(_range_max)
     if c >= range_min and c <= range_max then
       return true
     end
@@ -75,13 +75,13 @@ local function bpe_char_encoder(): {string: string}
 
   local n = 0 --Current re-map offset
   for i = 0,255 do
-    local i_as_char = utf8.char(i)
+    local i_as_char = utf8_.char(i)
     if is_valid_bpe_char(i) then
       --TODO BUG - This is incompatible with the simple decoder swap_kv method
       --r[i] = i_as_char
       r[i_as_char] = i_as_char
     else
-      local mapped_char = utf8.char(n+256)
+      local mapped_char = utf8_.char(n+256)
       --TODO BUG - This is incompatible with the simple decoder swap_kv method
       --r[i] = mapped_char
       r[i_as_char] = mapped_char
@@ -170,7 +170,7 @@ end
 
 local function bpe_word_from_string(text: string): {string}
   local r = {}
-  for _, c in utf8.codes(text) do
+  for _, c in utf8_.codes(text) do
     table.insert(r, c)
   end
   return r
@@ -223,7 +223,7 @@ function Tokenizer.tokenize(tokenizer: Tokenizer, text: string): Tokens
   --pat tokens -> char encoded pat tokens
   for _, pat_token in ipairs(pat_tokens) do
     local be_chars = {}
-    for _, c in utf8.codes(pat_token) do
+    for _, c in utf8_.codes(pat_token) do
       local be_char = tokenizer.byte_encoder[c]
       if not be_char then
         error("Unhandled byte_endcoder index: '"..c.."'")
@@ -251,7 +251,7 @@ function Tokenizer.detokenize(tokenizer: Tokenizer, tokens: Tokens): string
   local text_chars = {}
   for _, token in ipairs(tokens) do
     local char_encoded_token = tokenizer.token_decoder[token]
-    for _, c in utf8.codes(char_encoded_token) do
+    for _, c in utf8_.codes(char_encoded_token) do
       table.insert(text_chars, tokenizer.byte_decoder[c])
     end
   end
