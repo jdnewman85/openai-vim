@@ -25,11 +25,13 @@ local function is_text_model(model: Model): boolean
 end
 
 function Model.new(name: string, endpoint: string, max_tokens: number): Model
-  return setmetatable({
-    name = name,
-    endpoint = endpoint,
-    max_tokens = max_tokens,
-  }, { __index = Model })
+  return setmetatable(
+    {
+      name = name,
+      endpoint = endpoint,
+      max_tokens = max_tokens,
+    },{ __index = Model }
+  )
 end
 
 function Model:is_codex(): boolean

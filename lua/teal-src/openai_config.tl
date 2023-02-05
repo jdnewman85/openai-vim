@@ -6,15 +6,23 @@ local record Config
   max_tokens: number
 
   new: function(boolean): Config
+  print_current_settings: function(Config)
+  get_current_model: function(Config, string): oa_models.Model
+  set_current_model: function(Config, string, oa_models.Model)
+  get_max_tokens: function(Config): number
+  set_max_tokens: function(Config, number)
 end
 
 function Config.new(default_codex_endpoints: boolean): Config
   local defaults = oa_models.Models.get_endpoint_defaults(default_codex_endpoints)
-  return {
-    default_models = defaults,
-    current_models = defaults,
-    max_tokens = 80,
-  }
+  return setmetatable(
+    {
+      default_models = defaults,
+      current_models = defaults,
+      max_tokens = 80,
+    },
+    { __index = Config }
+  )
 end
 
 function Config:print_current_settings()
