@@ -110,9 +110,9 @@ end
 --- Get a ts compatible range of the current visual selection.
 --
 -- The range of ts nodes start with 0 and the ending range is exclusive.
-function M.visual_selection_range(): number, number, number, number
-  local _, csrow, cscol, _ = unpack(vim.fn.getpos("'<") as {number, number, number, number})
-  local _, cerow, cecol, _ = unpack(vim.fn.getpos("'>") as {number, number, number, number})
+function M.visual_selection_range(): integer, integer, integer, integer
+  local _, csrow, cscol, _ = unpack(vim.fn.getpos("'<") as {integer, integer, integer, integer})
+  local _, cerow, cecol, _ = unpack(vim.fn.getpos("'>") as {integer, integer, integer, integer})
   if csrow < cerow or (csrow == cerow and cscol <= cecol) then
     return csrow - 1, cscol - 1, cerow - 1, cecol
   else
@@ -146,7 +146,7 @@ function M.table_concat(t1: {any}, ...: {any}): {any}
   return t1
 end
 
-function M.swap_kv(t: table): table
+function M.swap_kv(t: {any: any}): {any: any}
   local r = {}
   for k,v in pairs(t) do
     r[v] = k

@@ -5,13 +5,11 @@ local tokenizer = require("tokenizer-internal")
 --local tokenizer = require("tokenizer-external")
 
 -- TODO Put in auto run folder
-local _tokenizer = tokenizer.new_tokenizer("/home/sci")
+local _tokenizer = tokenizer.new("/home/sci")
 
 local M = { }
 
-local output_window = nil
-local output_buffer = nil
-local highlight_namespace = nil
+local highlight_namespace: integer
 
 --TODO Highlight space characters with background or similar?
 local highlight_colors = {
@@ -24,20 +22,12 @@ local highlight_colors = {
   "rainbowcol7",
 }
 
-function open_window_if_needed()
-  if not output_window or not output_buffer then
-    output_window, output_buffer = utils.open_floating_window()
-  end
-
-  return output_window, output_buffer
-end
-
-function M.tokenize(text)
+function M.tokenize(text: string): tokenizer.TokenList
   --print("Tokenizing: '" .. text .. "'")
-  return tokenizer.tokenizer_token_list(_tokenizer, text) --TODO OMG....
+  return tokenizer.token_list(_tokenizer, text)
 end
 
-function M.highlight_tokens(tokens, buffer, start_line, start_column)
+function M.highlight_tokens(tokens: tokenizer.TokenList, buffer: integer, start_line: integer, start_column: integer)
   highlight_namespace = vim.api.nvim_create_namespace("TokenizerHighlights")
   local current_col = start_column
   local current_line_num = start_line
@@ -57,7 +47,7 @@ function M.highlight_tokens(tokens, buffer, start_line, start_column)
   end
 end
 
-function M.tokenize_selected_text()
+function M.tokenize_selected_text(): tokenizer.TokenList
   local input = utils.buf_vtext()
   if not input then return end
 
@@ -76,7 +66,7 @@ function M.tokenize_selected_text()
   return response
 end
 
-function M.clear_highlights(buffer)
+function M.clear_highlights(buffer: integer)
   vim.api.nvim_buf_clear_namespace(buffer, highlight_namespace, 0, -1)
 end
 
