@@ -1,4 +1,3 @@
-require('vim')
 local oa_models = require('openai_models')
 
 local record Config
