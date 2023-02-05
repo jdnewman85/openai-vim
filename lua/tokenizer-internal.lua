@@ -237,7 +237,7 @@ end
 --TODO REM or replace
 local profile_n = 0
 function M.tokenizer_token_list(tokenizer, text)
-  utils.prof_start("/home/sci/prof/tokenizer/tokenizer_token_list-"..profile_n..".log")
+--  utils.prof_start("/home/sci/prof/tokenizer/tokenizer_token_list-"..profile_n..".log")
   local tokens = M.tokenizer_tokenize(tokenizer, text)
   local token_list = {}
   for _, token in ipairs(tokens) do
@@ -249,7 +249,7 @@ function M.tokenizer_token_list(tokenizer, text)
       }
     )
   end
-  utils.prof_stop()
+--  utils.prof_stop()
   return token_list
 end
 
