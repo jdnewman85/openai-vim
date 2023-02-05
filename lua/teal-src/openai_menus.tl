@@ -25,7 +25,7 @@ end
 
 local function choose_model_endpoint_menu()
   local default_models = oa_models.Models.defaults()
-  local endpoints = default_models.endpoints()
+  local endpoints = default_models:endpoints()
   table.sort(endpoints)
 
   vim.ui.select(
