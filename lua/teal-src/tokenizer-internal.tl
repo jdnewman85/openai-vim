@@ -236,7 +236,7 @@ function Tokenizer.tokenize(tokenizer: Tokenizer, text: string): Tokens
     local be_pat_token = table.concat(be_chars)
 
     --char encoded pat tokens -> byte pair encoded tokens
-    local bpe_tokens = tokenizer_bpe(tokenizer, be_pat_token)
+    local bpe_tokens = Tokenizer.bpe(tokenizer, be_pat_token)
     --byte pair encoded tokens -> fully encoded tokens
     for _, bpe_token in ipairs(bpe_tokens) do
       local token = tokenizer.token_encoder[bpe_token]

@@ -77,21 +77,33 @@ function Models.defaults(): Models
 end
 
 function Models:filter_is_codex(): Models
-  return func.filter_i(self, is_codex_model) as Models
+  return setmetatable(
+    func.filter_i(self, is_codex_model),
+    { __index = Models }
+  ) as Models
 end
 
 function Models:filter_is_edit(): Models
-  return func.filter_i(self, is_edit_model) as Models
+  return setmetatable(
+    func.filter_i(self, is_edit_model),
+    { __index = Models }
+  ) as Models
 end
 
 function Models:filter_is_text(): Models
-  return func.filter_i(self, is_text_model) as Models
+  return setmetatable(
+    func.filter_i(self, is_text_model),
+    { __index = Models }
+  ) as Models
 end
 
 function Models:filter_by_endpoint(endpoint: string): Models
-  return func.filter_i(self, function(model: Model): boolean
-    return model.endpoint == endpoint
-  end) as Models
+  return setmetatable(
+    func.filter_i(self, function(model: Model): boolean
+      return model.endpoint == endpoint
+    end),
+    { __index = Models }
+  ) as Models
 end
 
 function Models.get_endpoint_defaults(codex: boolean): {string: Model}
@@ -109,9 +121,12 @@ end
 
 --TODO Replace many model functions with methods
 function Models:find_by_name(name: string): Model
-  return func.find_i(self, function(model: Model): boolean
-    return model.name == name
-  end) as Model
+  return setmetatable(
+    func.find_i(self, function(model: Model): boolean
+      return model.name == name
+    end),
+    { __index = Model }
+  ) as Model
 end
 
 function Models:names(): {string}
