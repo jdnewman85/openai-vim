@@ -139,8 +139,11 @@ local record Tokenizer
   bpe_ranks: {string: integer}
 
   new: function(string): Tokenizer
+  --TODO methods
+  bpe: function(Tokenizer, string): {string}
   tokenize: function(Tokenizer, string): Tokens
   detokenize: function(Tokenizer, Tokens): string
+  token_list: function(Tokenizer, string): TokenList
 end
 
 function Tokenizer.new(model_dir: string): Tokenizer
@@ -176,7 +179,7 @@ local function bpe_word_from_string(text: string): {string}
   return r
 end
 
-local function tokenizer_bpe(tokenizer: Tokenizer, text: string): {string} --TODO OOP
+function Tokenizer.bpe(tokenizer: Tokenizer, text: string): {string} --TODO OOP
   local word = bpe_word_from_string(text)
 
   while true do
