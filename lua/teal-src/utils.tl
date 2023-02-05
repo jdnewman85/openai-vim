@@ -1,6 +1,4 @@
 --TODO Tidy and eval
-local unpack = table.unpack
-
 local M = {}
 
 function M.get_vsel(): table

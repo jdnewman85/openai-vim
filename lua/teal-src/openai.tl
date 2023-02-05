@@ -1,5 +1,3 @@
-local unpack = table.unpack
-
 local utils = require('utils')
 local openai_config = require('openai_config')
 

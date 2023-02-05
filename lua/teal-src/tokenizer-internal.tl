@@ -1,4 +1,4 @@
---local utf8 = require("utf8")
+local utf8 = require("utf8")
 local utils = require("utils")
 --local func = require("functional") --TODO use? Eval performance? Iterators?
 
@@ -17,7 +17,7 @@ local opt_space_others = opt_space.."[^%s%a%d]+"
 local spaces = "%s+"
 
 local pats = {
-  table.unpack(contractions),
+  unpack(contractions),
   opt_space_alpha,
   opt_space_numeric,
   opt_space_others,
@@ -59,7 +59,7 @@ local function is_valid_bpe_char(c: integer): boolean
   }
 
   for _, range in ipairs(valid_ranges) do
-    local _range_min, _range_max = table.unpack(range)
+    local _range_min, _range_max = unpack(range)
     local range_min = utf8.codepoint(_range_min)
     local range_max = utf8.codepoint(_range_max)
     if c >= range_min and c <= range_max then
