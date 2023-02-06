@@ -2,8 +2,8 @@ local M = {}
 
 --TODO Generators? Ranges?
 
-local type FilterPredicate = function(any): boolean
-function M.filter(collection: table, predicate: FilterPredicate): table
+local type FilterPredicate = function<V>(V): boolean
+function M.filter<K, V>(collection: {K: V}, predicate: FilterPredicate<V>): {K: V}
   local result = {}
   for k, v in pairs(collection) do
     if predicate(v) then
@@ -13,7 +13,7 @@ function M.filter(collection: table, predicate: FilterPredicate): table
   return result
 end
 
-function M.map_to_array(collection: table): {any}
+function M.map_to_array<K, V>(collection: {K: V}): {V}
   local result = {}
   for _, v in pairs(collection) do
     table.insert(result, v)
@@ -22,8 +22,8 @@ function M.map_to_array(collection: table): {any}
 end
 
 --TODO Evaluate whether transform should take key, and whether that should also be transformed?
-local type MapTransform = function(any): any
-function M.map(collection: table, transform: MapTransform): table
+local type MapTransform = function<V, V2>(V): V2
+function M.map<K, V, V2>(collection: {K: V}, transform: MapTransform<V, V2>): {K: V2}
   local result = {}
   for k, v in pairs(collection) do
     result[k] = transform(v)
@@ -31,8 +31,8 @@ function M.map(collection: table, transform: MapTransform): table
   return result
 end
 
-local type Reducer = function(any, any): any
-function M.reduce(collection: table, initial: any, reducer: Reducer): any
+local type Reducer = function<A, V>(A, V): A
+function M.reduce<K, V, A>(collection: {K: V}, initial: A, reducer: Reducer<A, V>): A
   local result = initial
   for _, v in pairs(collection) do
     result = reducer(result, v)
@@ -40,8 +40,8 @@ function M.reduce(collection: table, initial: any, reducer: Reducer): any
   return result
 end
 
-local type FindPredicate = function(any): boolean
-function M.find(collection: table, predicate: FindPredicate): any
+local type FindPredicate = function<V>(V): boolean
+function M.find<K, V>(collection: {K: V}, predicate: FindPredicate<V>): V
   for _, v in pairs(collection) do
     if predicate(v) then
       return v
@@ -50,16 +50,16 @@ function M.find(collection: table, predicate: FindPredicate): any
 end
 
 --TODO Return boolean?
-function M.contains(collection: table, item: any): any
+function M.contains<K, V>(collection: {K: V}, item: V): boolean
   for _, v in pairs(collection) do
     if v == item then
-      return v
+      return true
     end
   end
   return false
 end
 
-function M.keys(collection: table): {any}
+function M.keys<K>(collection: {K: any}): {K}
   local result = {}
   for k in pairs(collection) do
     table.insert(result, k)
@@ -68,7 +68,7 @@ function M.keys(collection: table): {any}
 end
 
 -- ipairs/array versions
-function M.filter_i(collection: {any}, predicate: function): {any}
+function M.filter_i<V>(collection: {V}, predicate: FilterPredicate<V>): {V}
   local result = {}
   for _, v in ipairs(collection) do
     if predicate(v) then
@@ -78,7 +78,7 @@ function M.filter_i(collection: {any}, predicate: function): {any}
   return result
 end
 
-function M.map_i(collection: {any}, transform: function): {any}
+function M.map_i<V, V2>(collection: {V}, transform: MapTransform<V, V2>): {V2}
   local result = {}
   for _, v in ipairs(collection) do
     table.insert(result, transform(v))
@@ -86,7 +86,7 @@ function M.map_i(collection: {any}, transform: function): {any}
   return result
 end
 
-function M.reduce_i(collection: {any}, initial: any, reducer: function): any
+function M.reduce_i<V, A>(collection: {V}, initial: A, reducer: Reducer<A, V>): A
   local result = initial
   for _, v in ipairs(collection) do
     result = reducer(result, v)
@@ -94,7 +94,7 @@ function M.reduce_i(collection: {any}, initial: any, reducer: function): any
   return result
 end
 
-function M.find_i(collection: {any}, predicate: function): any
+function M.find_i<V>(collection: {V}, predicate: FindPredicate<V>): V
   for _, v in ipairs(collection) do
     if predicate(v) then
       return v
@@ -103,10 +103,10 @@ function M.find_i(collection: {any}, predicate: function): any
 end
 
 --TODO Return boolean?
-function M.contains_i(collection: {any}, item: any): any
+function M.contains_i<V>(collection: {V}, item: V): boolean
   for _, v in ipairs(collection) do
     if v == item then
-      return v
+      return true
     end
   end
   return false

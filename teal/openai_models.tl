@@ -139,14 +139,16 @@ end
 
 local type EndpointModelMap = {string: Models}
 function Models:get_endpoint_model_map(): EndpointModelMap
-  return func.reduce_i(self, {}, function(acc: EndpointModelMap, model: Model): EndpointModelMap
-    local endpoint = model.endpoint
-    if not acc[endpoint] then
-      acc[endpoint] = {}
+  return func.reduce_i(self, {} as EndpointModelMap,
+    function(acc: EndpointModelMap, model: Model): EndpointModelMap
+      local endpoint = model.endpoint
+      if not acc[endpoint] then
+        acc[endpoint] = {}
+      end
+      table.insert(acc[endpoint], model)
+      return acc
     end
-    table.insert(acc[endpoint], model)
-    return acc
-  end) as EndpointModelMap
+  ) as EndpointModelMap
 end
 
 function Models:endpoints(): {string}
