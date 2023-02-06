@@ -10,6 +10,11 @@ local record Model
   is_codex: function(Model): boolean
   is_edit: function(Model): boolean
   is_text: function(Model): boolean
+
+  metamethod __index: Model --TODO Does this do anything?
+end
+local function decorate_model_methods(model: Model): Model
+  return setmetatable(model, { __index = Model })
 end
 
 local function is_codex_model(model: Model): boolean
@@ -25,13 +30,11 @@ local function is_text_model(model: Model): boolean
 end
 
 function Model.new(name: string, endpoint: string, max_tokens: number): Model
-  return setmetatable(
-    {
-      name = name,
-      endpoint = endpoint,
-      max_tokens = max_tokens,
-    },{ __index = Model }
-  )
+  return decorate_model_methods({
+    name = name,
+    endpoint = endpoint,
+    max_tokens = max_tokens,
+  })
 end
 
 function Model:is_codex(): boolean
@@ -62,11 +65,14 @@ local record Models
   get_endpoint_model_map: function(Models): EndpointModelMap
   endpoints: function(Models): {string}
 
-  metamethod __index: Models
+  metamethod __index: Models --TODO Does this do anything?
+end
+local function decorate_models_methods(models: Models): Models
+  return setmetatable(models, { __index = Models })
 end
 
 function Models.defaults(): Models
-  return setmetatable({
+  return decorate_models_methods({
     Model.new('text-davinci-003',      'completions', 4000),
     Model.new('text-curie-001',        'completions', 2048),
     Model.new('text-babbage-001',      'completions', 2048),
@@ -75,37 +81,27 @@ function Models.defaults(): Models
     Model.new('code-cushman-001',      'completions', 2048),
     Model.new('text-davinci-edit-001', 'edits',       nil ),
     Model.new('code-davinci-edit-001', 'edits',       nil ),
-  }, { __index = Models })
+  })
 end
 
 function Models:filter_is_codex(): Models
-  return setmetatable(
-    func.filter_i(self, is_codex_model),
-    { __index = Models }
-  ) as Models
+  return decorate_models_methods(func.filter_i(self, is_codex_model))
 end
 
 function Models:filter_is_edit(): Models
-  return setmetatable(
-    func.filter_i(self, is_edit_model),
-    { __index = Models }
-  ) as Models
+  return decorate_models_methods(func.filter_i(self, is_edit_model))
 end
 
 function Models:filter_is_text(): Models
-  return setmetatable(
-    func.filter_i(self, is_text_model),
-    { __index = Models }
-  ) as Models
+  return decorate_models_methods(func.filter_i(self, is_text_model))
 end
 
 function Models:filter_by_endpoint(endpoint: string): Models
-  return setmetatable(
+  return decorate_models_methods(
     func.filter_i(self, function(model: Model): boolean
       return model.endpoint == endpoint
-    end),
-    { __index = Models }
-  ) as Models
+    end)
+  )
 end
 
 function Models.get_endpoint_defaults(codex: boolean): {string: Model}
@@ -123,18 +119,19 @@ end
 
 --TODO Replace many model functions with methods
 function Models:find_by_name(name: string): Model
-  return setmetatable(
-    func.find_i(self, function(model: Model): boolean
-      return model.name == name
-    end),
-    { __index = Model }
-  ) as Model
+  return decorate_model_methods(
+    func.find_i(self,
+      function(model: Model): boolean
+        return model.name == name
+      end
+    )
+  )
 end
 
 function Models:names(): {string}
   return func.map_i(self, function(model: Model): string
     return model.name
-  end) as {string}
+  end)
 end
 
 local type EndpointModelMap = {string: Models}
@@ -148,11 +145,11 @@ function Models:get_endpoint_model_map(): EndpointModelMap
       table.insert(acc[endpoint], model)
       return acc
     end
-  ) as EndpointModelMap
+  )
 end
 
 function Models:endpoints(): {string}
-  return func.keys(self:get_endpoint_model_map()) as {string}
+  return func.keys(self:get_endpoint_model_map())
 end
 
 return {Model = Model, Models = Models}
