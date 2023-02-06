@@ -28,6 +28,7 @@ function Func.filter<K, V>(c: {K: V}, predicate: FilterPredicate<V>): {K: V}
       r[k] = v
     end
   end
+  setmetatable(r, getmetatable(c))
   return r
 end
 function Func.filter_i<V>(c: {V}, predicate: FilterPredicate<V>): {V}
@@ -37,6 +38,7 @@ function Func.filter_i<V>(c: {V}, predicate: FilterPredicate<V>): {V}
       table.insert(r, v)
     end
   end
+  setmetatable(r, getmetatable(c))
   return r
 end
 
@@ -45,6 +47,7 @@ function Func.map<K, V, V2>(c: {K: V}, transform: MapTransform<V, V2>): {K: V2}
   for k, v in pairs(c) do
     r[k] = transform(v)
   end
+  setmetatable(r, getmetatable(c))
   return r
 end
 function Func.map_i<V, V2>(c: {V}, transform: MapTransform<V, V2>): {V2}
@@ -52,6 +55,7 @@ function Func.map_i<V, V2>(c: {V}, transform: MapTransform<V, V2>): {V2}
   for _, v in ipairs(c) do
     table.insert(r, transform(v))
   end
+  setmetatable(r, getmetatable(c))
   return r
 end
 
@@ -60,6 +64,7 @@ function Func.reduce<K, V, A>(c: {K: V}, initial: A, reducer: Reducer<A, V>): A
   for _, v in pairs(c) do
     r = reducer(r, v)
   end
+  setmetatable(r, getmetatable(initial)) --TODO Needed?
   return r
 end
 function Func.reduce_i<V, A>(c: {V}, initial: A, reducer: Reducer<A, V>): A
@@ -67,6 +72,7 @@ function Func.reduce_i<V, A>(c: {V}, initial: A, reducer: Reducer<A, V>): A
   for _, v in ipairs(c) do
     r = reducer(r, v)
   end
+  setmetatable(r, getmetatable(initial))
   return r
 end
 
@@ -75,16 +81,19 @@ function Func.map_to_array<K, V>(c: {K: V}): {V}
   for _, v in pairs(c) do
     table.insert(r, v)
   end
+  setmetatable(r, getmetatable(c) as metatable<{V}>) --TODO Evaluate/Test/Consider
   return r
 end
 
 function Func.reduce_map_to_array<K, V>(c: {K: V}): {V}
-  return Func.reduce(c, {} as {V},
+  local r = Func.reduce(c, {} as {V},
     function(acc: {V}, v: V): {V}
       table.insert(acc, v)
       return acc
     end
   )
+  setmetatable(r, getmetatable(c) as metatable<{V}>) --TODO Evaluate/Test/Consider
+  return r
 end
 
 
