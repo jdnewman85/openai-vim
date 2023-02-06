@@ -11,4 +11,4 @@ vim.api.nvim_set_keymap("v", "<leader>oe", "<cmd>lua require('openai').selection
 -- Menu
 vim.api.nvim_set_keymap("n", "<leader>om", "<cmd>lua require('openai_menus').show_menu()<cr>", {})
 -- Config
-vim.api.nvim_set_keymap("n", "<leader>op", "<cmd>lua require('openai_config').print_current_settings()<cr>", {})
+vim.api.nvim_set_keymap("n", "<leader>op", "<cmd>lua require('openai_config'):print_current_settings()<cr>", {})

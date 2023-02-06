@@ -1,6 +1,6 @@
-local utf8 = require("utf8")
+local utf8_ = require("utf8") --TODO Make teal issue - Don't bring in compat stdlib if turned off
 local utils = require("utils")
---local func = require("functional") --TODO use? Eval performance? Itterators?
+--local func = require("functional") --TODO use? Eval performance? Iterators?
 
 local contractions = {
   "'s",
@@ -16,15 +16,15 @@ local opt_space_numeric = opt_space.."%d+"
 local opt_space_others = opt_space.."[^%s%a%d]+"
 local spaces = "%s+"
 
-local pats = utils.table_concat(
-  contractions,
+local pats = {
+  unpack(contractions),
   opt_space_alpha,
   opt_space_numeric,
   opt_space_others,
   spaces
-)
+}
 
-function pat(s)
+local function pat(s: string): {string}
   local r = {}
 
   local i = 1
@@ -42,6 +42,7 @@ function pat(s)
     end
 
     if not matched then
+      --TODO
       print("WARNING UNHANDLED STUFFS!")
       break
     end
@@ -50,7 +51,7 @@ function pat(s)
   return r
 end
 
-function is_valid_bpe_char(c)
+local function is_valid_bpe_char(c: integer): boolean
   local valid_ranges = {
     {'!', '~'},
     {'¡', '¬'},
@@ -58,9 +59,9 @@ function is_valid_bpe_char(c)
   }
 
   for _, range in ipairs(valid_ranges) do
-    local range_min, range_max = unpack(range)
-    range_min = utf8.codepoint(range_min)
-    range_max = utf8.codepoint(range_max)
+    local _range_min, _range_max = unpack(range)
+    local range_min = utf8_.codepoint(_range_min)
+    local range_max = utf8_.codepoint(_range_max)
     if c >= range_min and c <= range_max then
       return true
     end
@@ -69,18 +70,18 @@ function is_valid_bpe_char(c)
   return false
 end
 
-function bpe_char_encoder()
+local function bpe_char_encoder(): {string: string}
   local r = {}
 
   local n = 0 --Current re-map offset
   for i = 0,255 do
-    local i_as_char = utf8.char(i)
+    local i_as_char = utf8_.char(i)
     if is_valid_bpe_char(i) then
       --TODO BUG - This is incompatible with the simple decoder swap_kv method
       --r[i] = i_as_char
       r[i_as_char] = i_as_char
     else
-      local mapped_char = utf8.char(n+256)
+      local mapped_char = utf8_.char(n+256)
       --TODO BUG - This is incompatible with the simple decoder swap_kv method
       --r[i] = mapped_char
       r[i_as_char] = mapped_char
@@ -91,36 +92,62 @@ function bpe_char_encoder()
   return r
 end
 
-function bpe_char_decoder() -- TODO OPT
+local function bpe_char_decoder(): {string: string} -- TODO OPT
   return utils.swap_kv(bpe_char_encoder())
 end
 
-function bpe_token_encoder(filename)
-  local file = vim.fn.join(vim.fn.readfile(filename))
+local function bpe_token_encoder(filename: string): {string: integer}
+  local file = vim.fn.join(vim.fn.readfile(filename)) as string --TODO vim.fn.join declaration correct?
   return vim.json.decode(file)
 end
 
-function bpe_token_decoder(filename) --TODO OPT
+local function bpe_token_decoder(filename: string): {integer: string} --TODO OPT
   return utils.swap_kv(bpe_token_encoder(filename))
 end
 
-function bpe_ranks(filename)
-  local file_lines = vim.fn.readfile(filename)
+local function bpe_ranks(filename: string): {string: integer}
+  local file_lines = vim.fn.readfile(filename) as {string} --TODO Correct/PR vim.fn.readfile declaration in teal-types?
   --First line is a comment
   table.remove(file_lines, 1) --OPT? Expensive
 
-  local bpe_ranks = {}
+  local r = {}
   for rank, bpe_pair in ipairs(file_lines) do
-    bpe_ranks[bpe_pair] = rank
+    r[bpe_pair] = rank
   end
 
-  return bpe_ranks
+  return r
 end
 
-local M = {}
+local type Tokens = {integer}
 
-function M.new_tokenizer(model_dir)
-  local r = {}
+local record TokenListItem
+  symbol: string
+  token: integer
+end
+
+local type TokenList = {TokenListItem}
+
+local record Tokenizer
+  Tokens: Tokens
+  TokenListItem: TokenListItem
+  TokenList: TokenList
+
+  byte_encoder: {string: string}
+  byte_decoder: {string: string}
+  token_encoder: {string: integer}
+  token_decoder: {integer: string}
+  bpe_ranks: {string: integer}
+
+  new: function(string): Tokenizer
+  --TODO methods
+  bpe: function(Tokenizer, string): {string}
+  tokenize: function(Tokenizer, string): Tokens
+  detokenize: function(Tokenizer, Tokens): string
+  token_list: function(Tokenizer, string): TokenList
+end
+
+function Tokenizer.new(model_dir: string): Tokenizer
+  local r:Tokenizer = {}
 
   r.byte_encoder = bpe_char_encoder()
   r.byte_decoder = bpe_char_decoder()
@@ -131,7 +158,7 @@ function M.new_tokenizer(model_dir)
   return r
 end
 
-function consecutive_pairs(word)
+local function consecutive_pairs(word: {string}): {{string}}
   local word_length = #word
   if word_length <= 1 then
     return {word}
@@ -144,20 +171,20 @@ function consecutive_pairs(word)
   return r
 end
 
-function bpe_word_from_string(text)
+local function bpe_word_from_string(text: string): {string}
   local r = {}
-  for _, c in utf8.codes(text) do
+  for _, c in utf8_.codes(text) do
     table.insert(r, c)
   end
   return r
 end
 
-function tokenizer_bpe(tokenizer, text) --TODO OOP
+function Tokenizer.bpe(tokenizer: Tokenizer, text: string): {string} --TODO OOP
   local word = bpe_word_from_string(text)
 
   while true do
     local symbol_pairs = consecutive_pairs(word)
-    local min_bigram = nil
+    local min_bigram: {string}
     local min_rank = math.huge
 
     for _, pair in ipairs(symbol_pairs) do
@@ -191,7 +218,7 @@ function tokenizer_bpe(tokenizer, text) --TODO OOP
   end
 end
 
-function M.tokenizer_tokenize(tokenizer, text)
+function Tokenizer.tokenize(tokenizer: Tokenizer, text: string): Tokens
   local tokens = {}
 
   --text -> pat tokens
@@ -199,7 +226,7 @@ function M.tokenizer_tokenize(tokenizer, text)
   --pat tokens -> char encoded pat tokens
   for _, pat_token in ipairs(pat_tokens) do
     local be_chars = {}
-    for _, c in utf8.codes(pat_token) do
+    for _, c in utf8_.codes(pat_token) do
       local be_char = tokenizer.byte_encoder[c]
       if not be_char then
         error("Unhandled byte_endcoder index: '"..c.."'")
@@ -209,7 +236,7 @@ function M.tokenizer_tokenize(tokenizer, text)
     local be_pat_token = table.concat(be_chars)
 
     --char encoded pat tokens -> byte pair encoded tokens
-    local bpe_tokens = tokenizer_bpe(tokenizer, be_pat_token)
+    local bpe_tokens = Tokenizer.bpe(tokenizer, be_pat_token)
     --byte pair encoded tokens -> fully encoded tokens
     for _, bpe_token in ipairs(bpe_tokens) do
       local token = tokenizer.token_encoder[bpe_token]
@@ -223,11 +250,11 @@ function M.tokenizer_tokenize(tokenizer, text)
   return tokens
 end
 
-function M.tokenizer_detokenize(tokenizer, tokens)
+function Tokenizer.detokenize(tokenizer: Tokenizer, tokens: Tokens): string
   local text_chars = {}
   for _, token in ipairs(tokens) do
     local char_encoded_token = tokenizer.token_decoder[token]
-    for _, c in utf8.codes(char_encoded_token) do
+    for _, c in utf8_.codes(char_encoded_token) do
       table.insert(text_chars, tokenizer.byte_decoder[c])
     end
   end
@@ -235,22 +262,18 @@ function M.tokenizer_detokenize(tokenizer, tokens)
 end
 
 --TODO REM or replace
-local profile_n = 0
-function M.tokenizer_token_list(tokenizer, text)
-  utils.prof_start("/home/sci/prof/tokenizer/tokenizer_token_list-"..profile_n..".log")
-  local tokens = M.tokenizer_tokenize(tokenizer, text)
+function Tokenizer.token_list(tokenizer: Tokenizer, text: string): TokenList
+  local tokens = Tokenizer.tokenize(tokenizer, text)
   local token_list = {}
   for _, token in ipairs(tokens) do
-    local symbol = M.tokenizer_detokenize(tokenizer, {token})
-    table.insert(token_list,
-      {
-        symbol = symbol,
-        token = token,
-      }
-    )
+    local symbol = Tokenizer.detokenize(tokenizer, {token})
+    local item: TokenListItem = {
+      symbol = symbol,
+      token = token,
+    }
+    table.insert(token_list, item)
   end
-  utils.prof_stop()
   return token_list
 end
 
-return M
+return Tokenizer
