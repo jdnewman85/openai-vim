@@ -13,9 +13,6 @@ local record Model
 
   metamethod __index: Model --TODO Does this do anything?
 end
-local function decorate_model_methods(model: Model): Model
-  return setmetatable(model, { __index = Model })
-end
 
 local function is_codex_model(model: Model): boolean
   return string.find(model.name, 'code') ~= nil
@@ -30,11 +27,11 @@ local function is_text_model(model: Model): boolean
 end
 
 function Model.new(name: string, endpoint: string, max_tokens: number): Model
-  return decorate_model_methods({
+  return setmetatable({
     name = name,
     endpoint = endpoint,
     max_tokens = max_tokens,
-  })
+  }, { __index = Model })
 end
 
 function Model:is_codex(): boolean
@@ -67,12 +64,9 @@ local record Models
 
   metamethod __index: Models --TODO Does this do anything?
 end
-local function decorate_models_methods(models: Models): Models
-  return setmetatable(models, { __index = Models })
-end
 
 function Models.defaults(): Models
-  return decorate_models_methods({
+  return setmetatable({
     Model.new('text-davinci-003',      'completions', 4000),
     Model.new('text-curie-001',        'completions', 2048),
     Model.new('text-babbage-001',      'completions', 2048),
@@ -81,27 +75,26 @@ function Models.defaults(): Models
     Model.new('code-cushman-001',      'completions', 2048),
     Model.new('text-davinci-edit-001', 'edits',       nil ),
     Model.new('code-davinci-edit-001', 'edits',       nil ),
-  })
+  }, { __index = Models }
+)
 end
 
 function Models:filter_is_codex(): Models
-  return decorate_models_methods(func.filter_i(self, is_codex_model))
+  return func.filter_i(self, is_codex_model)
 end
 
 function Models:filter_is_edit(): Models
-  return decorate_models_methods(func.filter_i(self, is_edit_model))
+  return func.filter_i(self, is_edit_model)
 end
 
 function Models:filter_is_text(): Models
-  return decorate_models_methods(func.filter_i(self, is_text_model))
+  return func.filter_i(self, is_text_model)
 end
 
 function Models:filter_by_endpoint(endpoint: string): Models
-  return decorate_models_methods(
-    func.filter_i(self, function(model: Model): boolean
+    return func.filter_i(self, function(model: Model): boolean
       return model.endpoint == endpoint
     end)
-  )
 end
 
 function Models.get_endpoint_defaults(codex: boolean): {string: Model}
@@ -119,13 +112,11 @@ end
 
 --TODO Replace many model functions with methods
 function Models:find_by_name(name: string): Model
-  return decorate_model_methods(
-    func.find_i(self,
+    return func.find_i(self,
       function(model: Model): boolean
         return model.name == name
       end
     )
-  )
 end
 
 function Models:names(): {string}
