@@ -3,7 +3,7 @@ local M = {}
 
 function M.get_vsel(): table
   local bufnr = vim.api.nvim_win_get_buf(0)
-  local start = vim.fn.getpos('v') as {number, number, number, number} -- [bufnum, lnum, col, off]
+  local start = vim.fn.getpos('v') as {number, number, number, number} -- [bufnum, lnum, col, off] --TODO Correct/PR vim.fn.getpos in teal-types
   local _end = vim.fn.getpos('.') as {number, number, number, number} -- [bufnum, lnum, col, off]
   return {
     bufnr = bufnr,
@@ -29,7 +29,7 @@ function M.buf_vtext(): string
     vim.cmd[[normal! gv]]
   end
   vim.cmd[[normal! "aygv]]
-  local text = vim.fn.getreg('a') as string
+  local text = vim.fn.getreg('a') as string --TODO Correct/PR vim.fn.getreg in teal-types
   vim.fn.setreg('a', a_orig)
   return text
 end
@@ -144,7 +144,7 @@ function M.table_concat(t1: {any}, ...: {any}): {any}
   return t1
 end
 
-function M.swap_kv(t: {any: any}): {any: any}
+function M.swap_kv<K, V>(t: {K: V}): {V: K}
   local r = {}
   for k,v in pairs(t) do
     r[v] = k

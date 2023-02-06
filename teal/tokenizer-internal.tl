@@ -93,20 +93,20 @@ local function bpe_char_encoder(): {string: string}
 end
 
 local function bpe_char_decoder(): {string: string} -- TODO OPT
-  return utils.swap_kv(bpe_char_encoder()) as {string: string}
+  return utils.swap_kv(bpe_char_encoder())
 end
 
 local function bpe_token_encoder(filename: string): {string: integer}
-  local file = vim.fn.join(vim.fn.readfile(filename)) as string
+  local file = vim.fn.join(vim.fn.readfile(filename)) as string --TODO vim.fn.join declaration correct?
   return vim.json.decode(file)
 end
 
 local function bpe_token_decoder(filename: string): {integer: string} --TODO OPT
-  return utils.swap_kv(bpe_token_encoder(filename)) as {integer: string}
+  return utils.swap_kv(bpe_token_encoder(filename))
 end
 
 local function bpe_ranks(filename: string): {string: integer}
-  local file_lines = vim.fn.readfile(filename) as {string}
+  local file_lines = vim.fn.readfile(filename) as {string} --TODO Correct/PR vim.fn.readfile declaration in teal-types?
   --First line is a comment
   table.remove(file_lines, 1) --OPT? Expensive
 

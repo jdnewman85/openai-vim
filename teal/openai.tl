@@ -6,7 +6,7 @@ local M = {}
 function M.request(endpoint: string, data: table, on_stdout: function): any
   local url = "https://api.openai.com/v1/"
   local curl = require('plenary.curl')
-  local auth_token = vim.env["OPENAI_APIKEY"] as string
+  local auth_token = vim.env["OPENAI_APIKEY"] as string --TODO correct and PR teal-types
 
   local headers = {
     ["Authorization"] = "Bearer " .. auth_token,
@@ -50,7 +50,7 @@ end
 function M.buffer_edit(append)
   request_edit_instruction(function(instruction: string): any
     local current_buffer = 0
-    local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, true) as {string}
+    local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, true) as {string} --TODO correct and PR teal-types
     local input = utils.string_join(lines, "\n")
     local data: table = {
       model = openai_config:get_current_model('edits').name,
@@ -60,7 +60,7 @@ function M.buffer_edit(append)
     --TODO Handle err
     local job = M.request("edits", data, function(_err: any, dat: table, _job: any)
       vim.schedule(function()
-        local obj = vim.fn.json_decode(dat) as {string: any}
+        local obj = vim.fn.json_decode(dat) as {string: any} --TODO Define and use response record
         local choices = obj.choices as {table}
         local first_choice = choices[1] as table
         local response = first_choice.text as string
@@ -84,10 +84,10 @@ function M.selection_edit() --TODO Factor common portions with buffer_edit out
     local current_buffer = 0
     local select_start_row, select_start_column, select_end_row, select_end_column = utils.visual_selection_range()
     if select_end_column == 2147483647 then -- If entire line is selected, we get "ROWMAX"
-      local end_line = vim.api.nvim_buf_get_lines(current_buffer, select_end_row as integer, (select_end_row+1) as integer, true)[1]
+      local end_line = vim.api.nvim_buf_get_lines(current_buffer, select_end_row, select_end_row+1, true)[1]
       select_end_column = string.len(end_line)
     end
-    local buf_text = vim.api.nvim_buf_get_text(current_buffer, select_start_row as integer, select_start_column as integer, select_end_row as integer, select_end_column as integer, {})
+    local buf_text = vim.api.nvim_buf_get_text(current_buffer, select_start_row, select_start_column, select_end_row, select_end_column, {})
     local input = utils.string_join(buf_text, "\n")
     local data: table = {
       model = openai_config:get_current_model('edits').name,
@@ -95,16 +95,16 @@ function M.selection_edit() --TODO Factor common portions with buffer_edit out
       instruction = instruction,
     }
     --TODO Handle err
-    local job = M.request("edits", data, function(_err: any, dat: table, _job: any)
+    local job = M.request("edits", data, function(_err: any, dat: table, _job: any) --TODO Better types
       vim.schedule(function()
-        local obj = vim.fn.json_decode(dat) as {string: any}
+        local obj = vim.fn.json_decode(dat) as {string: any} --TODO Define and use response record
         local choices = obj.choices as {table}
         local first_choice = choices[1] as table
         local response = first_choice.text as string
         local split_response = utils.string_split(response, "\n")
         --vim.pretty_print(response)
         table.remove(split_response) -- HACK - Edit seems to always append a newline?
-        vim.api.nvim_buf_set_text(current_buffer, select_start_row as integer, select_start_column as integer, select_end_row as integer, select_end_column as integer, {response})
+        vim.api.nvim_buf_set_text(current_buffer, select_start_row, select_start_column, select_end_row, select_end_column, {response})
         print("Finished Edits")
       end)
     end)
@@ -122,7 +122,7 @@ function M._create_append_to_buffer_func(target_buffer: integer, start_insert_ro
     insert_column = 0
   end
 
-  local fn =  function(_err: any, data: string, _job: any)
+  local fn =  function(_err: any, data: string, _job: any) --TODO Better types
     -- Trim off `Data :`
     local maybe_json = string.sub(data, 7, -1)
     if maybe_json == '[DONE]' then
@@ -137,7 +137,7 @@ function M._create_append_to_buffer_func(target_buffer: integer, start_insert_ro
     end
 
     vim.schedule(function()
-      local d = vim.fn.json_decode(maybe_json) as table
+      local d = vim.fn.json_decode(maybe_json) as table --TODO Define/use record
       local choices = d.choices as {table}
       local choice = choices[1] as table
       local resp = choice.text as string
@@ -146,7 +146,7 @@ function M._create_append_to_buffer_func(target_buffer: integer, start_insert_ro
       -- Use nvim_buf_set_lines if we need to append lines,
       --  to avoid insert_row being out of bounds for nvim_buf_set_text
       --  Use nvim_buf_set_text, otherwise, so we can insert _on_ a line
-      local buffer_row_length = vim.api.nvim_buf_line_count(target_buffer as integer)
+      local buffer_row_length = vim.api.nvim_buf_line_count(target_buffer)
       if insert_row >= buffer_row_length then
         vim.api.nvim_buf_set_lines(target_buffer, insert_row, insert_row, true, resp_array)
       else
@@ -214,7 +214,7 @@ function M.complete_selection(): any
 
   local current_buffer = 0
   local _, _, insert_row, insert_column = utils.visual_selection_range()
-  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row as integer, insert_column as integer)
+  local append_to_buffer_func = M._create_append_to_buffer_func(current_buffer, insert_row, insert_column)
 
   local response_decoded = M.request("completions", data, append_to_buffer_func)
 --  vim.pretty_print(response_decoded)
