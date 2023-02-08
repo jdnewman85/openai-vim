@@ -76,27 +76,6 @@ function Func.reduce_i<V, A>(c: {V}, initial: A, reducer: Reducer<A, V>): A
   return r
 end
 
-function Func.map_to_array<K, V>(c: {K: V}): {V}
-  local r = {}
-  for _, v in pairs(c) do
-    table.insert(r, v)
-  end
-  setmetatable(r, getmetatable(c) as metatable<{V}>) --TODO Evaluate/Test/Consider
-  return r
-end
-
-function Func.reduce_map_to_array<K, V>(c: {K: V}): {V}
-  local r = Func.reduce(c, {} as {V},
-    function(acc: {V}, v: V): {V}
-      table.insert(acc, v)
-      return acc
-    end
-  )
-  setmetatable(r, getmetatable(c) as metatable<{V}>) --TODO Evaluate/Test/Consider
-  return r
-end
-
-
 function Func.find<K, V>(c: {K: V}, predicate: FindPredicate<V>): V
   for _, v in pairs(c) do
     if predicate(v) then
