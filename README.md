@@ -7,6 +7,7 @@ Don't use it yet
 
 # Alternatives
 Here are some alternatives in the interim. I've not actually used any, and can't make any recommendations.
+- [github/copilot.vim](https://github.com/github/copilot.vim)
 - [tom-doerr/vim_codex](https://github.com/tom-doerr/vim_codex)
 - [aduros/ai.vim](https://github.com/aduros/ai.vim)
 - [jessfraz/openai.vim](https://github.com/jessfraz/openai.vim)
